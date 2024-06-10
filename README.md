@@ -4,7 +4,6 @@ author: "Rodriguez-Morales MA; Rincon-Parra VJ"
 output: 
   md_document:
     variant: markdown
-    toc: true
 ---
 
 -   [1. Organizar entorno de
