@@ -8,7 +8,7 @@ output:
 ---
 
 -   [1. Organizar entorno de
-    trabajo](#organizar-entorno-de-trabajo){#toc-organizar-entorno-de-trabajo}
+    trabajo](#organizar-entorno-de-trabajo)(#toc-organizar-entorno-de-trabajo)
 -   [2. Fundamentación del
     proceso](#fundamentación-del-proceso){#toc-fundamentación-del-proceso}
     -   [2.1 Definición de Área
@@ -180,7 +180,7 @@ plot_areasM<- ggpubr::ggarrange(plotlist = list(plot_areaM_preliminar, plot_area
 print(plot_areasM)
 ```
 
-#  {#ID_fig1}
+#  (#ID_fig1)
 
 ![](outputs/figure1.png) Figura 1. Comparación entre el área M
 preliminar y el área M seleccionada para el análisis.
