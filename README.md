@@ -1,17 +1,7 @@
----
-title: "Flujo de trabajo – Modelo de distribución de Vaccinium meridionale en el altiplano cundiboyacense, Colombia"
-author: "Rodriguez-Morales MA; Rincon-Parra VJ"
-output: 
-  md_document:
-    variant: gfm
-    preserve_yaml: true
-    toc: true
----
-
 - [1. Organizar entorno de trabajo](#organizar-entorno-de-trabajo)
 - [2. Fundamentación del proceso](#fundamentación-del-proceso)
   - [2.1 Definición de Área M.](#definición-de-área-m.)
-  - [2.2 Selección de variables](#ID_SeleccionVariables)
+  - [2.2 Selección de variables](#selección-de-variables)
   - [2.3 Estimación de modelos](#ID_EstimacionModelos)
   - [2.4 Selección de mejores modelos y mejor
     ensamblaje](#selección-de-mejores-modelos-y-mejor-ensamblaje)
@@ -186,6 +176,8 @@ superpone con el Área M preliminar ([Figura 1](#ID_fig1)). Este ajuste
 permitió una mejor calibración de los modelos a partir de una región
 mejor representada para la especie, mejorando así los parámetros de
 modelación para estimar su distribución en el área de estudio.
+
+<a id="ID_SeleccionVariables"></a>
 
 ### 2.2 Selección de variables
 
