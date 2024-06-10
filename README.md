@@ -3,38 +3,31 @@ title: "Flujo de trabajo – Modelo de distribución de Vaccinium meridionale en
 author: "Rodriguez-Morales MA; Rincon-Parra VJ"
 output: 
   md_document:
-    variant: markdown
+    variant: gfm
     preserve_yaml: true
     toc: true
 ---
 
--   [1. Organizar entorno de
-    trabajo](#organizar-entorno-de-trabajo){#toc-organizar-entorno-de-trabajo}
--   [2. Fundamentación del
-    proceso](#fundamentación-del-proceso){#toc-fundamentación-del-proceso}
-    -   [2.1 Definición de Área
-        M.](#definición-de-área-m.){#toc-definición-de-área-m.}
-    -   [2.2 Selección de
-        variables](#ID_SeleccionVariables){#toc-ID_SeleccionVariables}
-    -   [2.3 Estimación de
-        modelos](#ID_EstimacionModelos){#toc-ID_EstimacionModelos}
-    -   [2.4 Selección de mejores modelos y mejor
-        ensamblaje](#selección-de-mejores-modelos-y-mejor-ensamblaje){#toc-selección-de-mejores-modelos-y-mejor-ensamblaje}
-    -   [2.5 Análisis de
-        variables](#análisis-de-variables){#toc-análisis-de-variables}
-    -   [2.6 Correspondencia de uso y
-        aprovechamiento.](#correspondencia-de-uso-y-aprovechamiento.){#toc-correspondencia-de-uso-y-aprovechamiento.}
--   [Ejecución del
-    proceso](#ejecución-del-proceso){#toc-ejecución-del-proceso}
-    -   [Definicion de parametros
-        generales.](#definicion-de-parametros-generales.){#toc-definicion-de-parametros-generales.}
-    -   [](#section){#toc-section}
-    -   [Cargar datos.](#cargar-datos.){#toc-cargar-datos.}
-    -   [Modelo preliminar -- Buffer de 1
-        grado.](#modelo-preliminar-buffer-de-1-grado.){#toc-modelo-preliminar-buffer-de-1-grado.}
-    -   [Modelo -- Bioma Andino Altoandino de la Cordillera
-        Oriental.](#modelo-bioma-andino-altoandino-de-la-cordillera-oriental.){#toc-modelo-bioma-andino-altoandino-de-la-cordillera-oriental.}
-    -   [](#section-1){#toc-section-1}
+- [1. Organizar entorno de trabajo](#organizar-entorno-de-trabajo)
+- [2. Fundamentación del proceso](#fundamentación-del-proceso)
+  - [2.1 Definición de Área M.](#definición-de-área-m.)
+  - [2.2 Selección de variables](#ID_SeleccionVariables)
+  - [2.3 Estimación de modelos](#ID_EstimacionModelos)
+  - [2.4 Selección de mejores modelos y mejor
+    ensamblaje](#selección-de-mejores-modelos-y-mejor-ensamblaje)
+  - [2.5 Análisis de variables](#análisis-de-variables)
+  - [2.6 Correspondencia de uso y
+    aprovechamiento.](#correspondencia-de-uso-y-aprovechamiento.)
+- [Ejecución del proceso](#ejecución-del-proceso)
+  - [Definicion de parametros
+    generales.](#definicion-de-parametros-generales.)
+  - [](#section)
+  - [Cargar datos.](#cargar-datos.)
+  - [Modelo preliminar – Buffer de 1
+    grado.](#modelo-preliminar-buffer-de-1-grado.)
+  - [Modelo – Bioma Andino Altoandino de la Cordillera
+    Oriental.](#modelo-bioma-andino-altoandino-de-la-cordillera-oriental.)
+  - [](#section-1)
 
 Este documento detalla el flujo de trabajo desarrollado en R software
 para la estimación del modelo de distribución del agras (Vaccinium
@@ -72,8 +65,8 @@ pueden encontrar en
 
 Siguiendo el proceso de organización propuesto por BioModelos, todo el
 flujo de trabajo incluyendo tanto este código, como los insumos de
-análisis, y resultados se ubican un folder denominado "modelling" sobre
-la ruta "\~/modelling/Agras".
+análisis, y resultados se ubican un folder denominado “modelling” sobre
+la ruta “~/modelling/Agras”.
 
 ``` r
 ## Cargar librerias necesarias para el análisis ####
@@ -107,7 +100,7 @@ print(dir_work)
 
 ### 2.1 Definición de Área M.
 
-El área de movilidad "Área M" define el rango espacial donde se evalúa
+El área de movilidad “Área M” define el rango espacial donde se evalúa
 la probabilidad de presencia de la especie. La distribución potencial de
 la especie no depende solo de las condiciones dentro del área de
 estudio, sino también de las características y barreras históricas y de
@@ -124,9 +117,9 @@ jurisdicción de la CAR ([Figura 1](#ID_fig1))
 Sin embargo, durante un análisis iterativo preliminar de selección de
 variables (ver [Selección de variables](#ID_SeleccionVariables)), se
 observó que el área M inicial presentaba una heterogeneidad excesiva
-(ver Modelo preliminar -- Buffer de 1 grado.). Esta heterogeneidad
-generó que los resultados destacaran variables fuertemente asociadas con
-la zona andina, debido a la alta frecuencia de registros en esa área con
+(ver Modelo preliminar – Buffer de 1 grado.). Esta heterogeneidad generó
+que los resultados destacaran variables fuertemente asociadas con la
+zona andina, debido a la alta frecuencia de registros en esa área con
 condiciones homogéneas respecto a la heterogeneidad ambiental que
 representaba el resto del Área M. Esto resultó en un sesgo que
 sobreestimó la distribución de la especie hacia la zona andina, pero que
@@ -180,7 +173,7 @@ plot_areasM<- ggpubr::ggarrange(plotlist = list(plot_areaM_preliminar, plot_area
 print(plot_areasM)
 ```
 
-`<a id="ID_fig1">`{=html}`</a>`{=html}
+<a id="ID_fig1"></a>
 
 ![](outputs/figure1.png) Figura 1. Comparación entre el área M
 preliminar y el área M seleccionada para el análisis.
@@ -194,7 +187,7 @@ permitió una mejor calibración de los modelos a partir de una región
 mejor representada para la especie, mejorando así los parámetros de
 modelación para estimar su distribución en el área de estudio.
 
-### 2.2 Selección de variables {#ID_SeleccionVariables}
+### 2.2 Selección de variables
 
 La selección y calibración de variables es esencial para obtener modelos
 predictivos precisos y confiables. Esto permite evitar problemas de
@@ -399,7 +392,7 @@ todas las variables en el modelo alcanzaron un nivel de importancia del
 1%, asegurando así la selección de un conjunto optimizado de variables
 para la calibración del modelo (Figura 7).
 
-### 2.3 Estimación de modelos {#ID_EstimacionModelos}
+### 2.3 Estimación de modelos
 
 La selección y calibración de modelos predictivos es un proceso crucial
 para asegurar resultados precisos y confiables sobre la distribución de
@@ -477,10 +470,10 @@ posible para la distribución de la especie (Tabla 1).
 
 Durante la selección iterativa y la evaluación de la importancia de las
 variables, estos modelos se estimaron utilizando el método de
-particionamiento "block" para la optimización computacional. Sin
+particionamiento “block” para la optimización computacional. Sin
 embargo, una vez identificadas las mejores variables de calibración, se
-empleó el método de particionamiento "jackknife" para la validación de
-resultados (Tabla 2). El método "jackknife" es una técnica robusta de
+empleó el método de particionamiento “jackknife” para la validación de
+resultados (Tabla 2). El método “jackknife” es una técnica robusta de
 validación cruzada que consiste en excluir sistemáticamente cada
 localidad de ocurrencia del conjunto de datos, entrenar el modelo con
 las localidades restantes y luego evaluar el modelo excluyendo dicha
@@ -513,7 +506,7 @@ coherentes y precisas, y se minimiza el riesgo de que modelos de baja
 calidad distorsionen los resultados finales. Para determinar cuáles son
 los mejores modelos, se utilizaron tanto el rendimiento estadístico como
 el conocimiento experto. El rendimiento de los modelos se evaluó
-utilizando el AICc derivado de la estimación "jackknife", que representa
+utilizando el AICc derivado de la estimación “jackknife”, que representa
 la calidad del ajuste del modelo penalizado por su complejidad. Como
 conocimiento experto, se estimó la similitud entre cada modelo y un mapa
 de expertos con restricciones e inclusiones de lugares con conocimiento
@@ -627,7 +620,7 @@ aprovechamiento, la cual se contrastó con la representatividad de la
 especie en la zona, definida como el área de la zona donde está presente
 la especie con alta probabilidad.
 
-Con esta información se generaron figuras de influencia -- dependencia
+Con esta información se generaron figuras de influencia – dependencia
 que representan la relación entre el aprovechamiento y la
 representatividad de la especie por sitio. La ubicación de los sitios en
 los cuadrantes de la figura representa:
@@ -666,11 +659,11 @@ Tabla 1. Combinaciones de modelos evalaudas
 
 Figura 4. Puntos usados para el modelo
 
-### Modelo preliminar -- Buffer de 1 grado.
+### Modelo preliminar – Buffer de 1 grado.
 
 Figura 5. Importancia de variables buffer 1 grado
 
-### Modelo -- Bioma Andino Altoandino de la Cordillera Oriental.
+### Modelo – Bioma Andino Altoandino de la Cordillera Oriental.
 
 Figura 6. Dendograma de correlación. Variables en rojo fueron
 seleccionadas, y en negro evitadas.
