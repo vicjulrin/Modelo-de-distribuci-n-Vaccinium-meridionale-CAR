@@ -4,7 +4,6 @@ author: "Rodriguez-Morales MA; Rincon-Parra VJ"
 output: 
   md_document:
     variant: markdown
-    preserve_yaml: true
     toc: true
 ---
 
