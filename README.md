@@ -1,3 +1,13 @@
+---
+title: "Flujo de trabajo – Modelo de distribución de Vaccinium meridionale en el altiplano cundiboyacense, Colombia"
+author: "Rodriguez-Morales MA; Rincon-Parra VJ"
+output: 
+  md_document:
+    variant: gfm
+    preserve_yaml: true
+    toc: true
+---
+
 - [1. Organizar entorno de trabajo](#organizar-entorno-de-trabajo)
 - [2. Fundamentación del proceso](#fundamentación-del-proceso)
   - [2.1 Definición de Área M.](#definición-de-área-m.)
