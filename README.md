@@ -6,35 +6,6 @@ output:
     variant: markdown
 ---
 
--   [1. Organizar entorno de
-    trabajo](#organizar-entorno-de-trabajo)(#toc-organizar-entorno-de-trabajo)
--   [2. Fundamentación del
-    proceso](#fundamentación-del-proceso){#toc-fundamentación-del-proceso}
-    -   [2.1 Definición de Área
-        M.](#definición-de-área-m.){#toc-definición-de-área-m.}
--   [](#ID_fig1){#toc-ID_fig1}
-    -   [2.2 Selección de
-        variables](#ID_SeleccionVariables){#toc-ID_SeleccionVariables}
-    -   [2.3 Estimación de
-        modelos](#ID_EstimacionModelos){#toc-ID_EstimacionModelos}
-    -   [2.4 Selección de mejores modelos y mejor
-        ensamblaje](#selección-de-mejores-modelos-y-mejor-ensamblaje){#toc-selección-de-mejores-modelos-y-mejor-ensamblaje}
-    -   [2.5 Análisis de
-        variables](#análisis-de-variables){#toc-análisis-de-variables}
-    -   [2.6 Correspondencia de uso y
-        aprovechamiento.](#correspondencia-de-uso-y-aprovechamiento.){#toc-correspondencia-de-uso-y-aprovechamiento.}
-    -   [Ejecución del
-        proceso](#ejecución-del-proceso){#toc-ejecución-del-proceso}
-        -   [Definicion de parametros
-            generales.](#definicion-de-parametros-generales.){#toc-definicion-de-parametros-generales.}
-        -   [](#section){#toc-section}
-        -   [Cargar datos.](#cargar-datos.){#toc-cargar-datos.}
-        -   [Modelo preliminar -- Buffer de 1
-            grado.](#modelo-preliminar-buffer-de-1-grado.){#toc-modelo-preliminar-buffer-de-1-grado.}
-        -   [Modelo -- Bioma Andino Altoandino de la Cordillera
-            Oriental.](#modelo-bioma-andino-altoandino-de-la-cordillera-oriental.){#toc-modelo-bioma-andino-altoandino-de-la-cordillera-oriental.}
-        -   [](#section-1){#toc-section-1}
-
 Este documento detalla el flujo de trabajo desarrollado en R software
 para la estimación del modelo de distribución del agras (Vaccinium
 meridionale) en la jurisdicción de la Corporación Autónoma Regional de
