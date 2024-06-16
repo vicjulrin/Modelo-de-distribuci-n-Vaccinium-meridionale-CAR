@@ -18,7 +18,6 @@ output:
 Flujo de trabajo – Modelo de distribución de Vaccinium meridionale en el
 altiplano cundiboyacense, Colombia
 ================
-## Tabla de contenido
 
 Este documento detalla el flujo de trabajo desarrollado en R software
 para la estimación del modelo de distribución del agras (Vaccinium
@@ -42,6 +41,7 @@ Finalmente, se realizó un análisis de correspondencia entre el mapa de
 distribución estimado y las dinámicas de uso y aprovechamiento de la
 especie por parte de comunidades locales.
 
+## Tabla de contenido
 
 - [1. Organizar entorno de trabajo](#1-organizar-entorno-de-trabajo)
 - [2. Fundamentación del procesoy carga de
