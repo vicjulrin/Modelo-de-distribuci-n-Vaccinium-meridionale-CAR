@@ -1,32 +1,45 @@
 ---
 title: "Flujo de trabajo – Modelo de distribución de Vaccinium meridionale en el altiplano cundiboyacense, Colombia"
-author: "Rodriguez-Morales MA; Rincon-Parra VJ"
+author: 
+  - name: "Rodriguez-Morales MA"
+    email: "ma-rodriguez@javeriana.edu.co"
+    affiliation: "Departamento de Biología. Pontificia Universidad Javeriana de Bogotá"
+  - name: "Rincon-Parra VJ"
+    email: "rincon-v@javeriana.edu.co"
+    affiliation: "Gerencia de información cientifica. Instituto de Investigación de Recursos Biológicos Alexander von Humboldt - IAvH"
 output: 
-  md_document:
-    variant: gfm
+  github_document:
+    md_extension: +gfm_auto_identifiers
     preserve_yaml: true
     toc: true
+    toc_depth: 4
 ---
 
-- [1. Organizar entorno de trabajo](#organizar-entorno-de-trabajo)
-- [2. Fundamentación del proceso](#fundamentación-del-proceso)
-  - [2.1 Definición de Área M.](#definición-de-área-m.)
-  - [2.2 Selección de variables](#selección-de-variables)
+Flujo de trabajo – Modelo de distribución de Vaccinium meridionale en el
+altiplano cundiboyacense, Colombia
+================
+truetrue
+
+- [1. Organizar entorno de trabajo](#1-organizar-entorno-de-trabajo)
+- [2. Fundamentación del procesoy carga de
+  datos](#2-fundamentación-del-procesoy-carga-de-datos)
+  - [2.1 Definición de Área M.](#21-definición-de-área-m)
+  - [2.2 Selección de variables](#22-selección-de-variables)
   - [2.3 Estimación de modelos](#ID_EstimacionModelos)
   - [2.4 Selección de mejores modelos y mejor
-    ensamblaje](#selección-de-mejores-modelos-y-mejor-ensamblaje)
-  - [2.5 Análisis de variables](#análisis-de-variables)
+    ensamblaje](#24-selección-de-mejores-modelos-y-mejor-ensamblaje)
+  - [2.5 Análisis de variables](#25-análisis-de-variables)
   - [2.6 Correspondencia de uso y
-    aprovechamiento.](#correspondencia-de-uso-y-aprovechamiento.)
+    aprovechamiento.](#26-correspondencia-de-uso-y-aprovechamiento)
 - [Ejecución del proceso](#ejecución-del-proceso)
   - [Definicion de parametros
-    generales.](#definicion-de-parametros-generales.)
+    generales.](#definicion-de-parametros-generales)
   - [](#section)
-  - [Cargar datos.](#cargar-datos.)
+  - [Cargar datos.](#cargar-datos)
   - [Modelo preliminar – Buffer de 1
-    grado.](#modelo-preliminar-buffer-de-1-grado.)
+    grado.](#modelo-preliminar--buffer-de-1-grado)
   - [Modelo – Bioma Andino Altoandino de la Cordillera
-    Oriental.](#modelo-bioma-andino-altoandino-de-la-cordillera-oriental.)
+    Oriental.](#modelo--bioma-andino-altoandino-de-la-cordillera-oriental)
   - [](#section-1)
 
 Este documento detalla el flujo de trabajo desarrollado en R software
@@ -43,8 +56,9 @@ sumado a la validación de expertos para seleccionar los parámetros de
 calibración de modelos más adecuados. Este enfoque se fundamenta
 principalmente en el flujo de trabajo establecido por BioModelos para la
 estimación de Modelos de Distribución de Especies, disponible en y
-explicada en . No obstante, se realizaron algunas modificaciones para
-optimizar la estimación, selección, y ensamblaje del modelo.
+explicada en <https://github.com/PEM-Humboldt/biomodelos-sdm>. No
+obstante, se realizaron algunas modificaciones para optimizar la
+estimación, selección, y ensamblaje del modelo.
 
 Finalmente, se realizó un análisis de correspondencia entre el mapa de
 distribución estimado y las dinámicas de uso y aprovechamiento de la
@@ -54,19 +68,45 @@ especie por parte de comunidades locales.
 
 Siguiendo la metodología propuesta por Biomodelos en
 <https://github.com/PEM-Humboldt/biomodelos-sdm>, para la ejecución del
-flujo de trabajo para la estimación de modelos de distribución, se debe
-disponer del archivo maxent.jar en la máquina de ejecución. Este archivo
-debe estar disponible en la ruta del directorio de trabajo o
-especificarse durante la ejecución del código la ruta donde está
-almacenado. Ejemplos de la organización de las rutas de trabajo se
-pueden encontrar en
-<https://github.com/PEM-Humboldt/biomodelos-sdm/tree/master/modelling> y
-<https://github.com/marlonecobos/kuenm>.
-
+flujo de trabajo para la estimación de modelos de distribución basada en
+modelos de máxima entropía (Maxent). Se requieren como insumos un área
+de movilidad - Área M, y datos de ocurrencia de la especie y variables
+ambientales referentes a esa área. Además, para ejecutarlo, se necesita
+una máquina con el [Kit de desarrollo de
+Java](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html)
+y [Maxent
+Software](https://biodiversityinformatics.amnh.org/open_source/maxent/).
 Siguiendo el proceso de organización propuesto por BioModelos, todo el
 flujo de trabajo incluyendo tanto este código, como los insumos de
-análisis, y resultados se ubican un folder denominado “modelling” sobre
-la ruta “~/modelling/Agras”.
+análisis se ubicaron en un folder denominado “modelling” en en una
+estructura de directorios de la siguiente manera para facilitar la
+ejecución del código:
+
+    modelling
+    │    
+    │- ScriptAgrasSDM.R
+    │- maxent.bat
+    │- maxent.jar
+    │- maxent.sh
+    │    
+    └-AreaM  
+    │ │
+    │ │- areaM_buffer1grado.tif
+    │ │- areaM_convexBiomasAndinos.tif
+    │     
+    └-Variables_AreaM  
+      │
+      │- Var_1.tif 
+      │- ...        # Archivos de variables
+      │- Var_n.tif
+
+En la estructura descrita, es esencial tener fácil acceso al archivo
+maxent.jar para la ejecución del software Maxent. Este archivo debe
+estar disponible en la ruta del directorio de trabajo para que se pueda
+especificar su ubicación durante la ejecución del código. Otros ejemplos
+de cómo organizar estas rutas de trabajo se pueden encontrar en
+<https://github.com/PEM-Humboldt/biomodelos-sdm/tree/master/modelling> y
+<https://github.com/marlonecobos/kuenm>.
 
 ``` r
 ## Cargar librerias necesarias para el análisis ####
@@ -88,15 +128,12 @@ lapply(packages_list, library, character.only = TRUE)
 ``` r
 ## Establecer directorio de trabajo ####
 dir_work<- this.path::this.path() %>% dirname()
-```
-
-``` r
 print(dir_work)
 ```
 
-    ## [1] "~/modelling/Agras"
+    [1] "~/modelling/Agras"
 
-## 2. Fundamentación del proceso
+## 2. Fundamentación del procesoy carga de datos
 
 ### 2.1 Definición de Área M.
 
@@ -173,10 +210,9 @@ plot_areasM<- ggpubr::ggarrange(plotlist = list(plot_areaM_preliminar, plot_area
 print(plot_areasM)
 ```
 
-<a id="ID_fig1"></a>
-
-![](outputs/figure1.png) Figura 1. Comparación entre el área M
-preliminar y el área M seleccionada para el análisis.
+<a id="ID_fig1"></a> ![](README_figures/figure1.png) Figura 1.
+Comparación entre el área M preliminar y el área M seleccionada para el
+análisis.
 
 Este análisis preliminar resaltó al bioma altoandino de la cordillera
 oriental como una variable crucial para la distribución de la especie
@@ -225,76 +261,45 @@ km), permitiendo un análisis detallado y escalable del entorno natural
 del altiplano cundiboyacense. Las variables categoricas se clasificaron
 por nivel como variables binarias independientes para obtener mayor
 detalle de su influencia durante el análisis. Se reescribieron las
-variables a formato .asc para optimizar el análisis.
+variables a formato .asc enpara optimizar el análisis y se almacenaron
+en “~modelling/variables_AreaM_adjust/Set_1”.
 
 ``` r
 ## Establecer covariables ####
-dir_layers<- file.path(dir_work, "variables_AreaM/Set_1") # folder donde se almacenan todas las covariables
+dir_layers<- file.path(dir_work, "variables_AreaM") # folder donde se almacenan todas las covariables
 explore_layers <- list.files(dir_layers, recursive = F)
-```
-
-``` r
 print(explore_layers)
 ```
 
-    ##  [1] "bioma_BIOMA_IAvH"                                                       
-    ##  [2] "CLC_CLC1_CobsNats_rep_apot0.5km.tif"                                    
-    ##  [3] "CLC_CLC1_CobsNats_rep_apot12.5km.tif"                                   
-    ##  [4] "CLC_CLC1_CobsNats_rep_apot4.5km.tif"                                    
-    ##  [5] "CLC_CLC2_Arbustales_rep_apot0.5km.tif"                                  
-    ##  [6] "CLC_CLC2_Arbustales_rep_apot12.5km.tif"                                 
-    ##  [7] "CLC_CLC2_Arbustales_rep_apot4.5km.tif"                                  
-    ##  [8] "CLC_CLC2_Bosques_rep_apot0.5km.tif"                                     
-    ##  [9] "CLC_CLC2_Bosques_rep_apot12.5km.tif"                                    
-    ## [10] "CLC_CLC2_Bosques_rep_apot4.5km.tif"                                     
-    ## [11] "huella2022_IHEH2022.tif"                                                
-    ## [12] "suelos_ACIDEZ"                                                          
-    ## [13] "suelos_CLIMA"                                                           
-    ## [14] "suelos_TEXTURA"                                                         
-    ## [15] "topographic_earthenv_Aspect_Cosine.tif"                                 
-    ## [16] "topographic_earthenv_Aspect_Eastness.tif"                               
-    ## [17] "topographic_earthenv_Aspect_Northness.tif"                              
-    ## [18] "topographic_earthenv_Aspect_Sine.tif"                                   
-    ## [19] "topographic_earthenv_Count_geomorphological_landforms.tif"              
-    ## [20] "topographic_earthenv_Elevation.tif"                                     
-    ## [21] "topographic_earthenv_Entropy_geomorphological_landforms.tif"            
-    ## [22] "topographic_earthenv_First_order_partial_derivative_E_W_slope.tif"      
-    ## [23] "topographic_earthenv_Flat_geomorphological_landform_Percentage.tif"     
-    ## [24] "topographic_earthenv_FootSlope_geomorphological_landform_Percentage.tif"
-    ## [25] "topographic_earthenv_Hollow_geomorphological_landform_Percentage.tif"   
-    ## [26] "topographic_earthenv_Majority_geomorphological_landform.tif"            
-    ## [27] "topographic_earthenv_Peak_geomorphological_landform_Percentage.tif"     
-    ## [28] "topographic_earthenv_Pit_geomorphological_landform_Percentage.tif"      
-    ## [29] "topographic_earthenv_Ridge_geomorphological_landform_Percentage.tif"    
-    ## [30] "topographic_earthenv_Roughness.tif"                                     
-    ## [31] "topographic_earthenv_Shannon_geomorphological_landforms.tif"            
-    ## [32] "topographic_earthenv_Shoulder_geomorphological_landform_Percentage.tif" 
-    ## [33] "topographic_earthenv_Slope.tif"                                         
-    ## [34] "topographic_earthenv_Slope_geomorphological_landform_Percentage.tif"    
-    ## [35] "topographic_earthenv_Spur_geomorphological_landform_Percentage.tif"     
-    ## [36] "topographic_earthenv_Terrain_Ruggedness_Index.tif"                      
-    ## [37] "topographic_earthenv_Topographic_Position_Index.tif"                    
-    ## [38] "topographic_earthenv_Uniformity_geomorphological_landforms.tif"         
-    ## [39] "topographic_earthenv_Valley_geomorphological_landform_Percentage.tif"   
-    ## [40] "worldclim_bio1_Annual_Mean_Temperature.tif"                             
-    ## [41] "worldclim_bio10_BMean_Temperature_of_Warmest_Quarter.tif"               
-    ## [42] "worldclim_bio11_Mean_Temperature_of_Coldest_Quarter.tif"                
-    ## [43] "worldclim_bio12_Annual_Precipitation.tif"                               
-    ## [44] "worldclim_bio13_Precipitation_of_Wettest_Month.tif"                     
-    ## [45] "worldclim_bio14_Precipitation_of_Driest_Month.tif"                      
-    ## [46] "worldclim_bio15_Precipitation_Seasonality.tif"                          
-    ## [47] "worldclim_bio16_Precipitation_of_Wettest_Quarter.tif"                   
-    ## [48] "worldclim_bio17_Precipitation_of_Driest_Quarter.tif"                    
-    ## [49] "worldclim_bio18_Precipitation_of_Warmest_Quarter.tif"                   
-    ## [50] "worldclim_bio19_Precipitation_of_Coldest_Quarter.tif"                   
-    ## [51] "worldclim_bio2_Mean_Diurnal_Range.tif"                                  
-    ## [52] "worldclim_bio3_Isothermality.tif"                                       
-    ## [53] "worldclim_bio4_Temperature_Seasonality.tif"                             
-    ## [54] "worldclim_bio5_Max_Temperature_of_Warmest_Month.tif"                    
-    ## [55] "worldclim_bio6_Min_Temperature_of_Coldest_Month.tif"                    
-    ## [56] "worldclim_bio7_Temperature_Annual_Range.tif"                            
-    ## [57] "worldclim_bio8_Mean_Temperature_of_Wettest_Quarter.tif"                 
-    ## [58] "worldclim_bio9_Mean_Temperature_of_Driest_Quarter.tif"
+    [1] "bioma_BIOMA_IAvH"                                                        "CLC_CLC1_CobsNats_rep_apot0.5km.tif"                                    
+    [3] "CLC_CLC1_CobsNats_rep_apot12.5km.tif"                                    "CLC_CLC1_CobsNats_rep_apot4.5km.tif"                                    
+    [5] "CLC_CLC2_Arbustales_rep_apot0.5km.tif"                                   "CLC_CLC2_Arbustales_rep_apot12.5km.tif"                                 
+    [7] "CLC_CLC2_Arbustales_rep_apot4.5km.tif"                                   "CLC_CLC2_Bosques_rep_apot0.5km.tif"                                     
+    [9] "CLC_CLC2_Bosques_rep_apot12.5km.tif"                                     "CLC_CLC2_Bosques_rep_apot4.5km.tif"                                     
+    [11] "huella2022_IHEH2022.tif"                                                 "suelos_ACIDEZ"                                                          
+    [13] "suelos_CLIMA"                                                            "suelos_TEXTURA"                                                         
+    [15] "topographic_earthenv_Aspect_Cosine.tif"                                  "topographic_earthenv_Aspect_Eastness.tif"                               
+    [17] "topographic_earthenv_Aspect_Northness.tif"                               "topographic_earthenv_Aspect_Sine.tif"                                   
+    [19] "topographic_earthenv_Count_geomorphological_landforms.tif"               "topographic_earthenv_Elevation.tif"                                     
+    [21] "topographic_earthenv_Entropy_geomorphological_landforms.tif"             "topographic_earthenv_First_order_partial_derivative_E_W_slope.tif"      
+    [23] "topographic_earthenv_Flat_geomorphological_landform_Percentage.tif"      "topographic_earthenv_FootSlope_geomorphological_landform_Percentage.tif"
+    [25] "topographic_earthenv_Hollow_geomorphological_landform_Percentage.tif"    "topographic_earthenv_Majority_geomorphological_landform.tif"            
+    [27] "topographic_earthenv_Peak_geomorphological_landform_Percentage.tif"      "topographic_earthenv_Pit_geomorphological_landform_Percentage.tif"      
+    [29] "topographic_earthenv_Ridge_geomorphological_landform_Percentage.tif"     "topographic_earthenv_Roughness.tif"                                     
+    [31] "topographic_earthenv_Shannon_geomorphological_landforms.tif"             "topographic_earthenv_Shoulder_geomorphological_landform_Percentage.tif" 
+    [33] "topographic_earthenv_Slope.tif"                                          "topographic_earthenv_Slope_geomorphological_landform_Percentage.tif"    
+    [35] "topographic_earthenv_Spur_geomorphological_landform_Percentage.tif"      "topographic_earthenv_Terrain_Ruggedness_Index.tif"                      
+    [37] "topographic_earthenv_Topographic_Position_Index.tif"                     "topographic_earthenv_Uniformity_geomorphological_landforms.tif"         
+    [39] "topographic_earthenv_Valley_geomorphological_landform_Percentage.tif"    "worldclim_bio1_Annual_Mean_Temperature.tif"                             
+    [41] "worldclim_bio10_BMean_Temperature_of_Warmest_Quarter.tif"                "worldclim_bio11_Mean_Temperature_of_Coldest_Quarter.tif"                
+    [43] "worldclim_bio12_Annual_Precipitation.tif"                                "worldclim_bio13_Precipitation_of_Wettest_Month.tif"                     
+    [45] "worldclim_bio14_Precipitation_of_Driest_Month.tif"                       "worldclim_bio15_Precipitation_Seasonality.tif"                          
+    [47] "worldclim_bio16_Precipitation_of_Wettest_Quarter.tif"                    "worldclim_bio17_Precipitation_of_Driest_Quarter.tif"                    
+    [49] "worldclim_bio18_Precipitation_of_Warmest_Quarter.tif"                    "worldclim_bio19_Precipitation_of_Coldest_Quarter.tif"                   
+    [51] "worldclim_bio2_Mean_Diurnal_Range.tif"                                   "worldclim_bio3_Isothermality.tif"                                       
+    [53] "worldclim_bio4_Temperature_Seasonality.tif"                              "worldclim_bio5_Max_Temperature_of_Warmest_Month.tif"                    
+    [55] "worldclim_bio6_Min_Temperature_of_Coldest_Month.tif"                     "worldclim_bio7_Temperature_Annual_Range.tif"                            
+    [57] "worldclim_bio8_Mean_Temperature_of_Wettest_Quarter.tif"                  "worldclim_bio9_Mean_Temperature_of_Driest_Quarter.tif"    
 
 ``` r
 ## Cargar variables ####
@@ -307,7 +312,7 @@ names(stac_layers)<-  gsub(",", ".", names(stac_layers)); names(stac_layers)<-  
 stac_names<- terra::freq(stac_layers) %>% dplyr::filter(!is.na(value)) %>% dplyr::filter(!value==0) %>% {names(stac_layers)[unique(.$layer)]}
 envMstack<- stac_layers[[stac_names]]
 
-# reescribir covariables para optimizar el analisis
+# reescribir covariables a dormato asc para optimizar el analisis
 folder_vars_areaM<- file.path(dir_work, "variables_AreaM_adjust/Set_1") # folder donde se reescriben
 
 dir.create(folder_vars_areaM, showWarnings = F, recursive = T)
@@ -335,24 +340,21 @@ if(!(name_layer %in% files_envM)){
 
 env.Mfiles <- list.files(folder_vars_areaM, ".asc$", recursive = T, full.names = T)
 env.M <- terra::rast(env.Mfiles)[[stac_names]]
-```
-
-``` r
 print(env.M)
 ```
 
-    ## class       : SpatRaster 
-    ## dimensions  : 409, 382, 68  (nrow, ncol, nlyr)
-    ## resolution  : 0.008992953, 0.008992953  (x, y)
-    ## extent      : -75.475, -72.03969, 3.558318, 7.236435  (xmin, xmax, ymin, ymax)
-    ## coord. ref. : lon/lat WGS 84 
-    ## sources     : bioma_BIOMA_IAvH_OrobiomaAndinoAltoandinocordilleraoriental.asc  
-    ##               bioma_BIOMA_IAvH_OrobiomaAzonalAndinoAltoandinocordilleraoriental.asc  
-    ##               CLC_CLC1_CobsNats_rep_apot0.5km.asc  
-    ##               ... and 65 more source(s)
-    ## names       : bioma~ental, bioma~ental, CLC_C~0.5km, CLC_C~2.5km, CLC_C~4.5km, CLC_C~0.5km, ... 
-    ## min values  :           0,           0,           0,       0.068,       0.004,           0, ... 
-    ## max values  :           1,           1,           1,       0.981,       0.999,           1, ...
+    class       : SpatRaster 
+    dimensions  : 409, 382, 68  (nrow, ncol, nlyr)
+    resolution  : 0.008992953, 0.008992953  (x, y)
+    extent      : -75.475, -72.03969, 3.558318, 7.236435  (xmin, xmax, ymin, ymax)
+    coord. ref. : lon/lat WGS 84 
+    sources     : bioma_BIOMA_IAvH_OrobiomaAndinoAltoandinocordilleraoriental.asc  
+                  bioma_BIOMA_IAvH_OrobiomaAzonalAndinoAltoandinocordilleraoriental.asc  
+                  CLC_CLC1_CobsNats_rep_apot0.5km.asc  
+                  ... and 65 more source(s)
+    names       : bioma~ental, bioma~ental, CLC_C~0.5km, CLC_C~2.5km, CLC_C~4.5km, CLC_C~0.5km, ... 
+    min values  :           0,           0,           0,       0.068,       0.004,           0, ... 
+    max values  :           1,           1,           1,       0.981,       0.999,           1, ... 
 
 La primera etapa incluyó la evaluación de la multicolinealidad de las
 variables. Para esto, se estimaron matrices de correlación de Spearman
@@ -407,7 +409,7 @@ relación entre las variables ambientales y la distribución de la
 especie. Como datos de ocurrencia se utilizaron los registros validados
 por expertos, mientras que como datos de fondo se usaron 10000 puntos
 aleatorios alrededor del área M 10,000 que cubrieran toda la
-heterogeneidad ambiental de la zona ([Figura 4](#ID_fig4)).
+heterogeneidad ambiental de la zona ([Figura 2](#ID_fig2)).
 
 ``` r
 # Organizacion de registros ####
@@ -440,7 +442,8 @@ Sbg <- cbind(terra::xyFromCell(env.M, sample_background), env.M[sample_backgroun
   dplyr::rename("longitude"="x", "latitude"="y") %>% na.omit()
 ```
 
-Figura 2. Puntos usados para el modelo
+<a id="ID_fig2"></a> ![](README_figures/figure2.png) Figura 2. Puntos
+usados para el modelo
 
 Se estimaron modelos Maxent que predicen la distribución potencial de
 una especie como la distribución de probabilidad mas uniforme o de
@@ -468,7 +471,72 @@ características (fc) junto con valores multiplicativos de regularización
 (rm) que varían de 0.5 a 6 en incrementos de 0.5. Esto generó un total
 de 360 combinaciones de modelos calibrados, permitiendo explorar un
 amplio rango de opciones para identificar el mejor modelo predictivo
-posible para la distribución de la especie (Tabla 1).
+posible para la distribución de la especie. Las calibraciones se
+llevaron a cabo con ENMevaluate, y las proyecciones de los modelos se
+realizaron con kuenm_mod. Ambas funciones utilizan Maxent para sus
+estimaciones, pero tienen diferente sintaxis para definir lfc. Teniendo
+esto en cuenta, se generaron tablas con los parámetros de calibración de
+los modelos.
+
+``` r
+# Definición parametros prueba modelos 
+model_options <- data.frame(
+  fc= c("L", "Q", "P", "T", "H", "LQ", "LH", "LP", "LT", "QH", "QP", "QT", "HP", "HT", "PT",
+        "LQH", "LQP", "LQT", "LPT", "LHT", "QHP", "QHT", "QPT", "HPT",
+        "LQHP", "LQHT", "LQPT", "LHPT", "QHPT", "LQHPT"),
+  fc_k= c("l", "q", "p", "t", "h", "lq", "lh", "lp", "lt", "qh", "qp", "qt", "ph", "th", "pt",
+          "lqh", "lqp", "lqt", "lpt", "lph", "qph", "qth", "qpt", "pth",
+          "lqph", "lqth", "lqpt", "lpth", "qpth", "lqpth")
+)
+
+models_input <- expand.grid(c("L", "Q", "P", "T", "H",
+                              "LQ", "LH", "LP", "LT", "QH", "QP", "QT","HP", "HT", "PT",
+                              "LQH", "LQP", "LQT", "LPT", "LHT", "QHP", "QHT", "QPT", "HPT",
+                              "LQHP", "LQHT", "LQPT", "LHPT", "QHPT", "LQHPT"),
+                            seq(0.5, 6, 0.5)) %>% setNames(c("fc", "rm")) %>% 
+  dplyr::mutate(model= paste0(rm, "_", tolower(fc))) %>% list(model_options) %>% plyr::join_all()
+
+print(str(models_input))
+print(models_input)
+```
+
+    'data.frame':   360 obs. of  4 variables:
+     $ fc   : Factor w/ 30 levels "L","Q","P","T",..: 1 2 3 4 5 6 7 8 9 10 ...
+     $ rm   : num  0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 ...
+     $ model: chr  "0.5_l" "0.5_q" "0.5_p" "0.5_t" ...
+     $ fc_k : chr  "l" "q" "p" "t" ...
+
+              fc  rm     model  fc_k
+         1      L 0.5     0.5_l     l
+         2      Q 0.5     0.5_q     q
+         3      P 0.5     0.5_p     p
+         4      T 0.5     0.5_t     t
+         5      H 0.5     0.5_h     h
+         6     LQ 0.5    0.5_lq    lq
+         7     LH 0.5    0.5_lh    lh
+         8     LP 0.5    0.5_lp    lp
+         9     LT 0.5    0.5_lt    lt
+         10    QH 0.5    0.5_qh    qh
+         11    QP 0.5    0.5_qp    qp
+         12    QT 0.5    0.5_qt    qt
+         13    HP 0.5    0.5_hp    ph
+         14    HT 0.5    0.5_ht    th
+         15    PT 0.5    0.5_pt    pt
+         16   LQH 0.5   0.5_lqh   lqh
+         17   LQP 0.5   0.5_lqp   lqp
+         18   LQT 0.5   0.5_lqt   lqt
+         19   LPT 0.5   0.5_lpt   lpt
+         20   LHT 0.5   0.5_lht   lph
+         21   QHP 0.5   0.5_qhp   qph
+         22   QHT 0.5   0.5_qht   qth
+         23   QPT 0.5   0.5_qpt   qpt
+         24   HPT 0.5   0.5_hpt   pth
+         25  LQHP 0.5  0.5_lqhp  lqph
+         26  LQHT 0.5  0.5_lqht  lqth
+         27  LQPT 0.5  0.5_lqpt  lqpt
+         28  LHPT 0.5  0.5_lhpt  lpth
+         29  QHPT 0.5  0.5_qhpt  qpth
+         30 LQHPT 0.5 0.5_lqhpt lqpth
 
 Durante la selección iterativa y la evaluación de la importancia de las
 variables, estos modelos se estimaron utilizando el método de
@@ -494,60 +562,90 @@ esta investigación se estableció en 0.75.
 
 En la modelización de la distribución de especies, es común que los
 modelos predictivos individuales muestren métricas de rendimiento con
-poca variabilidad, lo que sugiere que todos los modelos son buenos a
-pesar de hacer predicciones diferentes. Frente a la dificultad de
-seleccionar un mejor modelo sin perder información relevante que otros
-modelos puedan mostrar, ensamblar modelos puede ser más efectivo.
-Ensamblar modelos implica combinar las predicciones de múltiples modelos
-para obtener una estimación más robusta y precisa de la tendencia de
-predicción, aprovechando las fortalezas comunes entre modelos y
-reduciendo la influencia de predicciones atípicas.
+poca variabilidad, sugiriendo que todos los modelos son buenos a pesar
+de hacer predicciones diferentes. En este contexto, ensamblar modelos
+puede ser más efectivo, ya que permite combinar las predicciones de
+múltiples modelos para obtener una estimación más robusta y precisa.
+Este enfoque aprovecha las fortalezas comunes entre modelos y reduce la
+influencia de predicciones atípicas.
 
 Ensamblar los mejores modelos garantiza que las predicciones sean
-coherentes y precisas, y se minimiza el riesgo de que modelos de baja
+coherentes y precisas, minimizando el riesgo de que modelos de baja
 calidad distorsionen los resultados finales. Para determinar cuáles son
 los mejores modelos, se utilizaron tanto el rendimiento estadístico como
 el conocimiento experto. El rendimiento de los modelos se evaluó
-utilizando el AICc derivado de la estimación “jackknife”, que representa
-la calidad del ajuste del modelo penalizado por su complejidad. Como
-conocimiento experto, se estimó la similitud entre cada modelo y un mapa
-de expertos con restricciones e inclusiones de lugares con conocimiento
-de presencia o ausencia de la especie. Esto permite evaluar qué modelos
-estadísticos son más similares al conocimiento experto y, en ese
-sentido, aquellos que mejor justifican estadísticamente la información
-de expertos ([Figura 3](#ID_fig3))
+utilizando el AICc derivado de la estimación “jackknife”, que mide la
+calidad del ajuste del modelo penalizado por su complejidad.Un AICc bajo
+es deseable porque indica que el modelo ofrece un buen ajuste a los
+datos sin ser excesivamente complejo. Un valor bajo de AICc sugiere que
+el modelo es eficiente en términos de información y evita el
+sobreajuste, logrando un equilibrio óptimo entre precisión y parsimonia.
 
-Figura 3. Mapa de expertos.
+El conocimiento experto se integró evaluando la similitud entre cada
+modelo y un mapa de expertos, el cual incluye restricciones de lugares
+con posible presencia (valor 1, Zones of Possible Presence according to
+Experts Map - ZPE) o ausencia (valor -1, Zones of Possible Absence
+according to Experts Map - ZAE) de la especie según el criterio de los
+expertos ([Figura 3](#ID_fig3)).Este mapa se generó marcando subcuencas
+en función de las ocurrencias, y el conocimiento experto sobre la
+especie en esas áreas y respecto al mapa de biomas.
+
+Este enfoque combinado permite identificar los modelos que se alinean
+mejor con el conocimiento experto y, por tanto, justifican mejor la
+información proporcionada por los expertos.
+
+``` r
+## Cargar mapa de expertos ####
+mapaExpertos<- terra::rast(file.path(dir_work, ExpertsMap, "mapaExpertosRestricciones.tif")) %>% setNames("mapaExperto")
+mapaExpertos_pol<- mapaExpertos %>% terra::as.polygons() %>% sf::st_as_sf() %>% dplyr::mutate(level_map= c("Posible\nAusencia", "Posible\nPresencia"))
+
+plot_mapaExpertos<- ggplot()+
+  annotation_map_tile(type = "cartolight", zoom = 7) +
+  geom_sf(data = st_as_sf(as.polygons(areaM)), aes(color = "orange"), fill = NA, size= 0.1 )+
+  scale_color_identity(name = "", guide = "legend",  labels = c( "Área M"),breaks = c("orange"))+
+  ggnewscale::new_scale_fill()+
+  geom_sf(data = mapaExpertos_pol, aes(fill = level_map), alpha = 0.5, color = NA)+
+  scale_fill_manual("Mapa de\nexpertos", values = setNames(c("purple", "darkgreen"), c("Posible\nAusencia", "Posible\nPresencia")))+
+  theme(text = element_text(size = 8))
+print(plot_mapaExpertos)
+```
+
+<a id="ID_fig3"></a> ![](README_figures/figure_mapExpertos.png) Figura
+3. Mapa de expertos.
 
 Para determinar los mejores modelos, tanto desde su rendimiento
-estadístico como su similitud con el mapa de expertos, en cada modelo se
-extrajo como área de alta probabilidad de ocurrencia de la especie
-aquellas zonas con predicción superior al umbral (≥0.75) y se calculó la
-puntuación del modelo utilizando la siguiente ecuación:
+estadístico como su similitud con el mapa de expertos, se extrajo de
+cada modelo el área de alta probabilidad de ocurrencia de la especie
+(Areas of High Probability according to Model - AHPM) como aquellas
+zonas con predicción superior al umbral (≥0.75). Con este dato se
+calculó la puntuación del modelo utilizando la siguiente ecuación:
 
-Esta ecuación penaliza los modelos con alta coincidencia con zonas de
-restricción, mientras que da más puntaje a aquellos que coinciden con
-zonas de inclusión del mapa de expertos. De esta manera, los AICc de
-rendimiento del modelo se ajustan considerando tanto las áreas de
-restricción como las de inclusión según el conocimiento experto.
+<a id="ID_ecuacion1"></a> ![](README_figures/ecuacion1.png)
+
+Esta ecuación penaliza a los modelos cuya AHPM muestra una alta
+coincidencia con las ZAE, mientras otorga una mayor puntuación a
+aquellos cuya AHPM coincide en gran medida con las ZPE. De esta manera,
+los valores de AICc, que miden el rendimiento del modelo, se ajustan
+considerando el conocimiento experto. Este enfoque asegura que los
+modelos seleccionados no solo tengan un buen rendimiento estadístico,
+sino que también sean coherentes con el conocimiento experto sobre la
+distribución de la especie.
 
 Con esta puntuación, se clasificaron los modelos del mejor al peor
-desempeño, siendo mejores aquellos con un score bajo. Un AICc bajo es
-deseable porque indica que el modelo ofrece un buen ajuste a los datos
-sin ser excesivamente complejo. Un valor bajo de AICc sugiere que el
-modelo es eficiente en términos de información y evita el sobreajuste,
-logrando un equilibrio óptimo entre precisión y parsimonia.
+desempeño, siendo considerados mejores aquellos con una puntuación más
+baja. A partir de esta clasificación, se probaron ensambles de
+diferentes combinaciones de modelos. Los ensambles se generaron
+combinando los modelos clasificados de forma incremental para evaluar su
+rendimiento combinado. El ensamble se estimó como la media lineal de
+predicción entre los modelos. Se comenzó combinando el mejor modelo con
+el segundo mejor, y luego se añadió el tercer mejor, y así sucesivamente
+hasta incluir todos los modelos. En cada etapa, se recalculó la
+puntuación del modelo ensamblando utilizando la
+[ecuación](#ID_ecuacion1) descrita.
 
-Después de clasificar los modelos, se ensamblaron de forma incremental
-para evaluar su rendimiento combinado. El ensamble se estimó como la
-media lineal de predicción entre los modelos. Se comenzó combinando el
-mejor modelo con el segundo mejor, y luego se añadió el tercer mejor, y
-así sucesivamente hasta incluir todos los modelos. En cada etapa, se
-recalculó la puntuación del modelo utilizando la ecuación descrita.
-
-Se seleccionó como mejor ensamblaje aquel con el mejor (menor) score
-recalculado, considerando esta combinación de modelos como la que mejor
-predice la distribución de la especie. De manera que representa la
+Se seleccionó como mejor modelo ensamblado aquel con el mejor (menor)
+score recalculado, considerando esta combinación de modelos como la que
+mejor predice la distribución de la especie. De manera que representa la
 estimación más robusta y confiable de la distribución de la especie,
 integrando tanto la precisión estadística como el conocimiento experto.
 
@@ -615,8 +713,8 @@ integran (Figura 10).
 La última parte del flujo de trabajo analizo la relación de
 correspondencia entre las predicciones del modelo y dinámicas de uso y
 aprovechamiento de la especie. Para ello, se sobrepusieron las áreas de
-alta probabilidad de ocurrencia de la especie (\>= 0.75) con zonas que
-contaban con datos de uso y aprovechamiento. Cada una de estas zonas
+alta probabilidad de ocurrencia de la especie AHPM (\>= 0.75) con zonas
+que contaban con datos de uso y aprovechamiento. Cada una de estas zonas
 contaba con una puntuación ponderada de índice de uso de
 aprovechamiento, la cual se contrastó con la representatividad de la
 especie en la zona, definida como el área de la zona donde está presente
