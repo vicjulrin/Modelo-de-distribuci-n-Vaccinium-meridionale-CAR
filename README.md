@@ -752,10 +752,7 @@ aprovechamiento.
 ## Ejecución del proceso
 
 ### Modelo preliminar – Buffer de 1 grado.
-
-<embed
-src="README_figures/compiled_dendrogram_selectvars_model_prel.pdf"
-style="width:100.0%" height="500" />
+![](README_figures/compiled_dendrogram_selectvars_model_prel.pdf)
 
 Figura 5. Importancia de variables buffer 1 grado
 
