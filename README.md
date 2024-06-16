@@ -32,15 +32,10 @@ truetrue
   - [2.6 Correspondencia de uso y
     aprovechamiento.](#26-correspondencia-de-uso-y-aprovechamiento)
 - [Ejecución del proceso](#ejecución-del-proceso)
-  - [Definicion de parametros
-    generales.](#definicion-de-parametros-generales)
-  - [](#section)
-  - [Cargar datos.](#cargar-datos)
   - [Modelo preliminar – Buffer de 1
     grado.](#modelo-preliminar--buffer-de-1-grado)
   - [Modelo – Bioma Andino Altoandino de la Cordillera
     Oriental.](#modelo--bioma-andino-altoandino-de-la-cordillera-oriental)
-  - [](#section-1)
 
 Este documento detalla el flujo de trabajo desarrollado en R software
 para la estimación del modelo de distribución del agras (Vaccinium
@@ -749,16 +744,6 @@ aprovechamiento.
 
 ## Ejecución del proceso
 
-### Definicion de parametros generales.
-
-Tabla 1. Combinaciones de modelos evalaudas
-
-### 
-
-### Cargar datos.
-
-Figura 4. Puntos usados para el modelo
-
 ### Modelo preliminar – Buffer de 1 grado.
 
 Figura 5. Importancia de variables buffer 1 grado
@@ -771,8 +756,6 @@ seleccionadas, y en negro evitadas.
 Figura 7. Importancia de variables areA M final
 
 Tabla 2. Resultados de los modeloss
-
-### 
 
 Figura 8. Dendograma de correlación de predicciones modelo ensamblado
 
