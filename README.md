@@ -18,24 +18,7 @@ output:
 Flujo de trabajo – Modelo de distribución de Vaccinium meridionale en el
 altiplano cundiboyacense, Colombia
 ================
-truetrue
-
-- [1. Organizar entorno de trabajo](#1-organizar-entorno-de-trabajo)
-- [2. Fundamentación del procesoy carga de
-  datos](#2-fundamentación-del-procesoy-carga-de-datos)
-  - [2.1 Definición de Área M.](#21-definición-de-área-m)
-  - [2.2 Selección de variables](#22-selección-de-variables)
-  - [2.3 Estimación de modelos](#ID_EstimacionModelos)
-  - [2.4 Selección de mejores modelos y mejor
-    ensamblaje](#24-selección-de-mejores-modelos-y-mejor-ensamblaje)
-  - [2.5 Análisis de variables](#25-análisis-de-variables)
-  - [2.6 Correspondencia de uso y
-    aprovechamiento.](#26-correspondencia-de-uso-y-aprovechamiento)
-- [Ejecución del proceso](#ejecución-del-proceso)
-  - [Modelo preliminar – Buffer de 1
-    grado.](#modelo-preliminar--buffer-de-1-grado)
-  - [Modelo – Bioma Andino Altoandino de la Cordillera
-    Oriental.](#modelo--bioma-andino-altoandino-de-la-cordillera-oriental)
+## Tabla de contenido
 
 Este documento detalla el flujo de trabajo desarrollado en R software
 para la estimación del modelo de distribución del agras (Vaccinium
@@ -58,6 +41,24 @@ estimación, selección, y ensamblaje del modelo.
 Finalmente, se realizó un análisis de correspondencia entre el mapa de
 distribución estimado y las dinámicas de uso y aprovechamiento de la
 especie por parte de comunidades locales.
+
+
+- [1. Organizar entorno de trabajo](#1-organizar-entorno-de-trabajo)
+- [2. Fundamentación del procesoy carga de
+  datos](#2-fundamentación-del-procesoy-carga-de-datos)
+  - [2.1 Definición de Área M.](#21-definición-de-área-m)
+  - [2.2 Selección de variables](#22-selección-de-variables)
+  - [2.3 Estimación de modelos](#ID_EstimacionModelos)
+  - [2.4 Selección de mejores modelos y mejor
+    ensamblaje](#24-selección-de-mejores-modelos-y-mejor-ensamblaje)
+  - [2.5 Análisis de variables](#25-análisis-de-variables)
+  - [2.6 Correspondencia de uso y
+    aprovechamiento.](#26-correspondencia-de-uso-y-aprovechamiento)
+- [Ejecución del proceso](#ejecución-del-proceso)
+  - [Modelo preliminar – Buffer de 1
+    grado.](#modelo-preliminar--buffer-de-1-grado)
+  - [Modelo – Bioma Andino Altoandino de la Cordillera
+    Oriental.](#modelo--bioma-andino-altoandino-de-la-cordillera-oriental)
 
 ## 1. Organizar entorno de trabajo
 
