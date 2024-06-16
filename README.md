@@ -18,6 +18,24 @@ output:
 Flujo de trabajo – Modelo de distribución de Vaccinium meridionale en el
 altiplano cundiboyacense, Colombia
 ================
+truetrue
+
+- [1. Organizar entorno de trabajo](#1-organizar-entorno-de-trabajo)
+- [2. Fundamentación del procesoy carga de
+  datos](#2-fundamentación-del-procesoy-carga-de-datos)
+  - [2.1 Definición de Área M.](#21-definición-de-área-m)
+  - [2.2 Selección de variables](#22-selección-de-variables)
+  - [2.3 Estimación de modelos](#ID_EstimacionModelos)
+  - [2.4 Selección de mejores modelos y mejor
+    ensamblaje](#24-selección-de-mejores-modelos-y-mejor-ensamblaje)
+  - [2.5 Análisis de variables](#25-análisis-de-variables)
+  - [2.6 Correspondencia de uso y
+    aprovechamiento.](#26-correspondencia-de-uso-y-aprovechamiento)
+- [Ejecución del proceso](#ejecución-del-proceso)
+  - [Modelo preliminar – Buffer de 1
+    grado.](#modelo-preliminar--buffer-de-1-grado)
+  - [Modelo – Bioma Andino Altoandino de la Cordillera
+    Oriental.](#modelo--bioma-andino-altoandino-de-la-cordillera-oriental)
 
 Este documento detalla el flujo de trabajo desarrollado en R software
 para la estimación del modelo de distribución del agras (Vaccinium
@@ -40,25 +58,6 @@ estimación, selección, y ensamblaje del modelo.
 Finalmente, se realizó un análisis de correspondencia entre el mapa de
 distribución estimado y las dinámicas de uso y aprovechamiento de la
 especie por parte de comunidades locales.
-
-## Tabla de contenido
-
-- [1. Organizar entorno de trabajo](#1-organizar-entorno-de-trabajo)
-- [2. Fundamentación del procesoy carga de
-  datos](#2-fundamentación-del-procesoy-carga-de-datos)
-  - [2.1 Definición de Área M.](#21-definición-de-área-m)
-  - [2.2 Selección de variables](#22-selección-de-variables)
-  - [2.3 Estimación de modelos](#ID_EstimacionModelos)
-  - [2.4 Selección de mejores modelos y mejor
-    ensamblaje](#24-selección-de-mejores-modelos-y-mejor-ensamblaje)
-  - [2.5 Análisis de variables](#25-análisis-de-variables)
-  - [2.6 Correspondencia de uso y
-    aprovechamiento.](#26-correspondencia-de-uso-y-aprovechamiento)
-- [Ejecución del proceso](#ejecución-del-proceso)
-  - [Modelo preliminar – Buffer de 1
-    grado.](#modelo-preliminar--buffer-de-1-grado)
-  - [Modelo – Bioma Andino Altoandino de la Cordillera
-    Oriental.](#modelo--bioma-andino-altoandino-de-la-cordillera-oriental)
 
 ## 1. Organizar entorno de trabajo
 
@@ -217,7 +216,9 @@ convexo alrededor del bioma altoandino de la cordillera oriental que se
 superpone con el Área M preliminar ([Figura 1](#ID_fig1)). Este ajuste
 permitió una mejor calibración de los modelos a partir de una región
 mejor representada para la especie, mejorando así los parámetros de
-modelación para estimar su distribución en el área de estudio.
+modelación para estimar su distribución en el área de estudio. Ambas
+areas M propuestas se evaluaron con la misma grilla de analisis de
+extension y resolucion.
 
 <a id="ID_SeleccionVariables"></a>
 
@@ -254,11 +255,16 @@ del IDEAM 2018
 (<http://www.ideam.gov.co/web/ecosistemas/coberturas-nacionales>), y se
 evaluaron a diferentes resoluciones espaciales (0.5 km, 4.5 km y 12.5
 km), permitiendo un análisis detallado y escalable del entorno natural
-del altiplano cundiboyacense. Las variables categoricas se clasificaron
-por nivel como variables binarias independientes para obtener mayor
-detalle de su influencia durante el análisis. Se reescribieron las
-variables a formato .asc enpara optimizar el análisis y se almacenaron
-en “~modelling/variables_AreaM_adjust/Set_1”.
+del altiplano cundiboyacense. Todas las variables se organizaron y
+alinearon previamente como rásteres en la misma extensión y resolución
+del área M, y se ubicaron en la carpeta “~/modelling/Variables_AreaM”,
+para facilitar su carga en el código.
+
+Las variables categoricas se clasificaron por nivel como variables
+binarias independientes para obtener mayor detalle de su influencia
+durante el análisis. Se reescribieron las variables a formato .asc
+enpara optimizar el análisis y se almacenaron en
+“~modelling/variables_AreaM_adjust/Set_1”.
 
 ``` r
 ## Establecer covariables ####
@@ -746,6 +752,10 @@ aprovechamiento.
 ## Ejecución del proceso
 
 ### Modelo preliminar – Buffer de 1 grado.
+
+<embed
+src="README_figures/compiled_dendrogram_selectvars_model_prel.pdf"
+style="width:100.0%" height="500" />
 
 Figura 5. Importancia de variables buffer 1 grado
 
