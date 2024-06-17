@@ -41,7 +41,7 @@ Finalmente, se realizó un análisis de correspondencia entre el mapa de
 distribución estimado y las dinámicas de uso y aprovechamiento de la
 especie por parte de comunidades locales.
 
-# Tabla de contenido
+## Tabla de contenido
 
 - [1. Organizar entorno de trabajo](#1-organizar-entorno-de-trabajo)
 - [2. Fundamentación del procesoy carga de
