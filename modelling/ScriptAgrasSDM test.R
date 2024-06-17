@@ -348,7 +348,6 @@ tryCatch({dev.off(); dev.off()}, error= function(e) NULL)
 
 # Extraer info del modelo
 eval_importance_model<- eval_block_prel@variable.importance
-eval_result_model<- eval_jack@results %>% dplyr::filter(tune.args %in% x$name_eval  ) %>% cbind(x) %>% dplyr::relocate(names(x), .before = 1)
 
 # Organizar información y estimar la métrica de importancia entre modelos
 length_models<- length(eval_block_prel@variable.importance)
@@ -554,18 +553,12 @@ list_selectvars_model <- pblapply(list_hclust_model, function(y) {
 
 
 
-list_selectvars_model[[length(list_hclust_model)]]$corhclust
 ggsave(file.path(dirname(dir_work), "README_figures", paste0("compiled_dendrogram_selectvars_model", ".png")) ,
        list_selectvars_model[[length(list_selectvars_model)]][["ggdendroPlot"]],
        width= 10, height = 4
 )
 
 
-
-
-saveRDS(eval_block, "eval_block.rds")
-
-saveRDS(compiled_dendrogram_selectvars_model, "compiled_dendrogram_selectvars_model.rds")
 
 
 # Obtener compilacion de dendogramas de todas las listas
@@ -580,12 +573,11 @@ for(plot in compiled_dendrogram_selectvars_model) {
 tryCatch({dev.off(); dev.off()}, error= function(e) NULL)
 
 
-
+eval_block<- eval_jack
 ## Figura Importancia de variables ####
 
 # Extraer info del modelo
 eval_importance_model<- eval_block@variable.importance
-eval_result_model<- eval_jack@results %>% dplyr::filter(tune.args %in% x$name_eval  ) %>% cbind(x) %>% dplyr::relocate(names(x), .before = 1)
 
 # Organizar información y estimar la métrica de importancia entre modelos
 length_models<- length(eval_block@variable.importance)

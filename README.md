@@ -18,7 +18,6 @@ output:
 Flujo de trabajo – Modelo de distribución de Vaccinium meridionale en el
 altiplano cundiboyacense, Colombia
 ================
-
 Este documento detalla el flujo de trabajo desarrollado en R software
 para la estimación del modelo de distribución del agras (Vaccinium
 meridionale) en la jurisdicción de la Corporación Autónoma Regional de
@@ -77,7 +76,6 @@ especie por parte de comunidades locales.
     - [Estimar modelo ensamblado](#estimar-modelo-ensamblado)
       - [Estadisticas modelo
         ensamblado](#estadisticas-modelo-ensamblado)
-        - [Importancia de variables](#importancia-de-variables-2)
         - [Tendencia de atributos - Analisis de dependencia
           parcial](#tendencia-de-atributos---analisis-de-dependencia-parcial)
     - [Analisis de aprovechamiento](#analisis-de-aprovechamiento)
@@ -1505,16 +1503,593 @@ el sobreajuste. Estos resultados estan almacenados en
 
 #### Generar modelos - mapas proyectados
 
+Las proyecciones de los modelos se realizaron utilizando kuenm_mod con
+el algoritmo Maxent para las estimaciones. Esta función genera archivos
+batch que permiten la ejecución de comandos de calibración definidos
+para generar las predicciones en Maxent. La organización de los insumos
+de entrada en carpetas específicas es esencial para que el archivo batch
+se ejecute correctamente y Maxent pueda acceder y procesar todos los
+datos necesarios de manera eficiente. Esta estructura incluye definir
+alli los datos de ocurrencia con el formato occ_kuenm y parametros
+enmeval en archivos CSV, variables ambientales organizadas en carpetas
+definidas como “Set1”, la definicion de un archivo kuenm.csv con la
+sintaxis asociada a Set1, y la definición de directorios de salida para
+almacenar los resultados. Para mas información sobre la ejecución
+kuenmood consultar en
+<https://rdrr.io/github/manubio13/ku.enm/man/kuenm_mod.html>.
+
+``` r
+## Organizar archivos para ejecutar la proyección Maxent ####
+
+folder_results<- paste0(gsub("/", "_", sp_name)) # Crear una carpeta para almacenar los insumos de Maxent con el nombre de la especie
+dir.create(folder_results)
+
+### Folder que almacena las variables ajustadas de proyeccion ####
+folder_M_variables<- file.path(folder_out, folder_results, "M_variables/Set_1");
+dir.create(folder_M_variables, showWarnings = F, recursive = T)
+
+vars_eval<- eval_jack@variable.importance[[1]]$variable
+lapply(vars_eval, function(z) {
+  file.copy(file.path(folder_vars_areaM, paste0(z, ".asc")),
+            file.path(folder_out, paste0(folder_results, "/M_variables/Set_1"), paste0(z, ".asc")), recursive = T)
+})
+
+### Folder que almacena los datos de calibracion obtenidos de evaluacion enmeval ####
+setwd(folder_out)
+folder_eval_results_enmeval<- file.path(folder_out, folder_results, "/eval_results_enmeval");
+dir.create(folder_eval_results_enmeval, showWarnings = T, recursive = T)
+write.csv(eval_results, file.path(folder_eval_results_enmeval, "eval_models.csv"), row.names = F )
+best_kuenm_style <- data.frame(Model = as.character(paste0("M_", eval_results$rm, "_F_", tolower(eval_results$fc), "_Set_1")), name_model= eval_results$model)
+write.csv(best_kuenm_style, file.path(folder_eval_results_enmeval, "selected_models.csv"), row.names = F)
+
+### Folder que almacena los datos de ocurrencia ####
+folder_occurrences<- file.path(folder_out, folder_results, "occurrences");
+dir.create(folder_occurrences, showWarnings = T, recursive = T)
+occ_kuenm <- eval_jack@occs[, c("longitude", "latitude")] %>% dplyr::mutate(species= basename(folder_results) ) %>% dplyr::relocate(species, .before = 1)
+write.csv(occ_kuenm, file.path(folder_occurrences, "occ_joint_kuenm.csv"), row.names = F)
+
+### Crear carpeta donde se almacenarán los resultados de proyección ####
+folder_results_predict <- file.path(folder_out, folder_results, "/final_models_enmeval");
+dir.create(folder_results_predict, showWarnings = F)
+
+## Estimar modelos de proyección Maxent ####
+setwd(folder_out)
+kuenm::kuenm_mod(
+  occ.joint = paste0(folder_results, "/occurrences/occ_joint_kuenm.csv"),  # Ruta al archivo CSV con datos de ocurrencia
+  M.var.dir = paste0(folder_results, "/M_variables"),  # Directorio con las variables 
+  batch = paste0(folder_results, "/final_models"), # Ruta para el archivo batch
+  out.eval = paste0(folder_results, "/eval_results_enmeval"), # Directorio para los resultados de evaluación
+  out.dir = paste0(folder_results, "/final_models_enmeval"), # Directorio para almacenar las proyecciones generadas
+  out.format = "cloglog", # Formato de salida de los modelos (cloglog)
+  jackknife = F, # Las validaciones jackknife ya se realizaron previamente
+  rep.n = 1, rep.type = "Bootstrap", # Las pruebas de estabilidad y robustez ya se realizaron previamente
+  max.memory = 2000, # Memoria máxima (en MB) asignada a Maxent 
+  project = F,  # No se realizan proyecciones a areas distindas
+  ext.type = "no_ext",  # No realizar extrapolaciones
+  write.mess = FALSE, write.clamp = FALSE, # simplicidad y eficiencia del proceso de modelado. Las variables y la zona M ya fueron calibradas previamente.
+  maxent.path = dir_work,  # Ruta al archivo folder del archivo ejecutable de Maxent
+  args = c(NULL, paste0("maximumbackground=", nrow(eval_jack@bg) )), # mismo background de calibracion
+  wait = TRUE, run = TRUE # Ejecucion del batch - Maxent
+)
+
+# Estimar métricas de los modelos ajustados ####
+best_kuenm_style <- data.frame(Model = as.character(paste0("M_", eval_results$rm, "_F_", tolower(eval_results$fc), "_Set_1")), name_model= eval_results$model)
+info_models<- best_kuenm_style %>% dplyr::mutate(name_eval= names(eval_jack@models), folder= file.path(folder_out,sp_name, "final_models_enmeval", name_model) )
+
+## Ajustar nombres de los modelos ####
+# para facilitar su carga posterior
+for(i in seq(nrow(info_models))){
+  old_name<- file.path(folder_out,sp_name, "final_models_enmeval", best_kuenm_style[i,"Model"])
+  new_name<- file.path(folder_out,sp_name, "final_models_enmeval", best_kuenm_style[i,"name_model"])
+  file.rename(old_name, new_name)
+}
+```
+
+Los modelos se guardaron como carpetas independientes en el directorio
+final_models_enmeval. Allí se almacenan mapas raster de la predicción de
+ocurrencia de la especie, expresada en rangos de probabilidad de 0 a 1,
+y las métricas Maxent asociadas a la estimación.
+
 #### Evaluacion de modelos
+
+Los modelos predictivos individuales mostraron métricas de rendimiento
+con poca variabilidad, sugiriendo que todos los modelos son buenos a
+pesar de hacer predicciones diferentes. Ensamblar modelos puede ser más
+efectivo aprovechando las fortalezas comunes entre modelos y reduciendo
+la influencia de predicciones atípicas. Para determinar cuáles son los
+mejores modelos a ensamblar en un modelo final, se seleccionaron los
+modelos con el mejor rendimiento estadístico y el conocimiento experto.
+Un valor bajo de AICc sugiere que el modelo es eficiente en términos de
+información y evita el sobreajuste, logrando un equilibrio óptimo entre
+precisión y parsimonia.
+
+El puntaje de los modelos se evaluó computando el AICc junto con la
+similitud entre cada modelo y un mapa de expertos (1 - ZPE) o ausencia (
+-1 - ZAE) siguiendo la ecuación descrita en la sección 2, que considera
+el AICc y las áreas de superposición entre las zonas de mejor predicción
+(AHPM) y el mapa de expertos.
+
+``` r
+## Evaluacion de modelos por puntuacion ####
+
+## Cargar stac de modelos ####
+list_models_compiled <- pbsapply(folders_models_path, function(e) {
+  file.path(e$folder, paste0(  "full_", e$name_layer, ".tif")) %>% terra::rast() %>% setNames(e$name_layer)
+})   %>% terra::rast()
+
+# Remover modelos sin AICc. Los modelos sin AICc representan que no tienen la información suficiente para ser evaluados adecuadamente.
+data_models_compiled<- c(mapaExpertos, list_models_compiled, raster_occurrences) %>% {.[cells(mapaExpertos)]} 
+eval_results2<- dplyr::filter(eval_results, !is.na(delta.AICc)) %>% arrange(delta.AICc)
+
+# Loop para estimar el puntaje por modelo
+list_evals<- eval_results2 %>% split(.$model)
+score_expertos <-pblapply( list_evals , function(x) {
+
+  # Filtrar por áreas de alta predicción del modelo (AHPM) acorde al umbral
+  mean_model_test<- data_models_compiled %>% dplyr::select(c("mapaExperto", x$model))
+  mean_model_tresh_test<- mean_model_test[mean_model_test[,x$model]>=0.75,] # dato AHPM
+  
+    # Calcular  metricas de segun mapa de experto
+  scores_expertos<- table(mean_model_tresh_test$mapaExperto) %>% {sapply(names(.), function(i) {   as.numeric(i)*(.[i])  }  )}
+  score_ex<- scores_expertos[scores_expertos<0] %>% abs() %>% mean() %>% {if(is.nan(.)){0}else{.}} #  Zones of Possible Presence according to Experts Map - ZPE
+  score_in<- scores_expertos[scores_expertos>0] %>% abs() %>% mean() %>% {if(is.nan(.)){0}else{.}} # Zones of Possible Absence according to Experts Map - ZAE
+  
+  # Estimación del puntaje final del modelo combinando AICc y las evaluaciones del experto
+  dplyr::mutate(x, score_ex= score_ex, score_in=score_in, score_expert= ( (x$AICc * ({if(score_ex==0){1}else{score_ex}}))/score_in ) )
+} ) %>% plyr::rbind.fill() %>% arrange(score_expert)
+```
+
+Con esta puntuación, se clasificaron los modelos del mejor al peor
+desempeño, siendo considerados mejores aquellos con una puntuación más
+baja.
 
 #### Estimar modelo ensamblado
 
+A partir de la clasificación de los modelos, se probaron ensamblajes de
+diferentes combinaciones de modelos para encontrar el mejor ensamblaje.
+Los ensamblajes se generaron combinando los modelos clasificados de
+forma incremental para evaluar su rendimiento combinado. El ensamblaje
+se estimó como la media lineal de predicción entre los modelos. Se
+comenzó combinando el mejor modelo con el segundo mejor, y luego se
+añadió el tercer mejor, y así sucesivamente hasta incluir todos los
+modelos. En cada etapa, se recalculó la puntuación del modelo ensamblado
+utilizando la ecuación descrita.
+
+``` r
+## Estimación iterativa del mejor modelo ensamblado ####
+
+# Proceso iterativo para probar ensamblajes de modelos desde el mejor hasta incluir todos los modelos.
+test_ensamble <-pblapply( seq_along(score_expertos$model) , function(i) {print(i)
+  
+  # seleccion de modelos
+  better_models_test<- score_expertos[rev(i:1),]
+  
+  # ensamble - media lineal
+  mean_model_tresh_test<- data_models_compiled_weights %>% dplyr::mutate(mean= rowMeans(dplyr::select(., better_models_test$model))) %>% 
+    dplyr::select(c("mapaExperto", "mean")) %>% dplyr::filter(mean>=0.75)   # Filtrar por áreas de alta predicción del modelo (AHPM) acorde al umbral
+  
+  # Calcular  metricas de segun mapa de experto
+  scores_expertos<- table(mean_model_tresh_test$mapaExperto) %>% {sapply(names(.), function(i) {   as.numeric(i)*(.[i])  }  )}
+  score_ex<- scores_expertos[scores_expertos<0] %>% abs() %>% mean() %>% {if(is.nan(.)){0}else{.}}  #  Zones of Possible Presence according to Experts Map - ZPE
+  score_in<- scores_expertos[scores_expertos>0] %>% abs() %>% mean() %>% {if(is.nan(.)){0}else{.}} # Zones of Possible Absence according to Experts Map - ZAE
+  
+  # Estimación del puntaje final del modelo combinando AICc y las evaluaciones del experto
+  list(data_score= data.frame(index= i, score_ex=score_ex, score_in= score_in, score_expert= ( (mean(better_models_test$AICc) * ({if(score_ex==0){1}else{score_ex}}))/score_in ) )  , 
+       better_models_test= better_models_test$model)
+} )
+
+# Compilar los resultados de las pruebas de ensamblaje
+results_test_ensamble <- purrr::map(test_ensamble, "data_score") %>% plyr::rbind.fill() %>% arrange( score_expert )
+
+# Seleccionar el mejor ensamblaje basado en el score recalculado
+better_models_index<- test_ensamble[[results_test_ensamble[2,]$index]]
+better_models_ensamble<- better_models_index$better_models_test
+
+# Generacion modelo ensamblado - MEDIA LINEAL DE LOS QUE LO INTEGRAN
+map_ensamble <- list_models_compiled[[ better_models_ensamble ]] %>% mean() %>% setNames("map_ensamble") 
+map_ensamble_treshold<- map_ensamble;map_ensamble_treshold[map_ensamble_treshold<model_threshold]<- NA # Areas de alta predicción del modelo (AHPM) acorde al umbral
+```
+
+Se esperaba seleccionar como mejor modelo ensamblado aquel con el mejor
+(menor) score recalculado, considerando esta combinación de modelos como
+la que mejor predice la distribución de la especie. Sin embargo, tras la
+revisión de expertos, se seleccionó el segundo mejor modelo ensamblado
+como el que mejor describe la distribución potencial de la especie. Este
+modelo representa la estimación más robusta y confiable de la
+distribución de la especie, integrando tanto la precisión estadística
+como el conocimiento experto.
+
 ##### Estadisticas modelo ensamblado
 
-###### Importancia de variables
+Para el modelo ensamblado, se realizaron estimaciones de las
+estadísticas clave utilizando el mismo enfoque aplicado a los modelos
+individuales. Dado que este modelo es el resultado de la media de un
+conjunto de modelos, las métricas de error e importancia del modelo
+ensamblado se calcularon como la media de los valores entre los modelos
+que lo conforman. La puntuación del modelo no se recalculó en esta
+etapa, ya que se obtuvo directamente mediante la ecuación que combina
+los AICc y las áreas de superposición con el mapa de expertos.
+
+``` r
+## Estadisticas mejor modelo ensamblado  ####
+
+# Compilar estadisticas del modelo ensamblado ####
+folders_better_models_path<- folders_models_path[better_models_ensamble]
+
+# Calcular la media de las métricas de evaluación (excluyendo los scores específicos)
+eval_results_models_ensamble<- score_expertos %>% dplyr::filter(model %in% better_models_ensamble)
+eval_result_ensamble<- eval_results_models_ensamble %>%  select_if(is.numeric) %>% dplyr::select(-names(.)[grepl("score", names(.))]) %>% colMeans(na.rm=T) %>% {as.data.frame(t(.))} %>% 
+  cbind(dplyr::select(better_models_index$data_score, -"index"))
+
+# Calcular la importancia media de las variables para el modelo ensamblado
+eval_importance_ensamble<- pblapply(folders_better_models_path, function(x) {
+  file.path(x$folder, paste0("importance_data_",x$name_layer, ".xlsx")) %>% read.xlsx() 
+}) %>% plyr::rbind.fill() %>% dplyr::group_by(variable) %>% 
+  dplyr::summarise(
+    percent.contribution = sum(percent.contribution)/ length(folders_better_models_path),
+    permutation.importance = sum(permutation.importance)/length(folders_better_models_path),
+  ) %>% arrange(-permutation.importance) 
+
+
+
+### Figura de importancia de variables - modelo ensamblado ####
+summ_importance_data_ensamble<- eval_importance_ensamble %>% 
+  dplyr::rowwise() %>% 
+  dplyr::mutate(ranking= mean(c(percent.contribution, permutation.importance))) %>% 
+  arrange(ranking) %>% 
+  as.data.frame() %>% dplyr::mutate(variable= factor(variable, levels = unique(.$variable)))
+
+dataplot_impvars_ensamble<-  summ_importance_data_ensamble %>% 
+  pivot_longer(cols = c(percent.contribution, permutation.importance), 
+               names_to = "tipo", values_to = "aporte") %>% 
+  dplyr::mutate(tipo=factor(tipo, levels= rev(c("percent.contribution", "permutation.importance"))))
+
+plot_impvars_ensamble<-     ggplot(dataplot_impvars_ensamble, aes(x = variable)) +
+  geom_bar(aes(y = aporte, fill = tipo), stat = "identity", alpha= 0.5)+
+  scale_y_continuous( breaks = seq(0, 100, by = 10)) +
+  coord_cartesian(ylim = c(0,100))+
+  
+  coord_flip() + 
+  labs(x = "Variables", y = "Porcentaje", fill = "") +
+  scale_fill_manual(values = setNames(c("#0000FE", "#00ADAC"), 
+                                      c("percent.contribution", "permutation.importance")),
+                    labels = setNames(c("Contribución", "Pérdida\npermutación"), 
+                                      c("percent.contribution", "permutation.importance"))
+  ) + theme_minimal()
+
+print(plot_impvars_ensamble)
+```
+
+![](README_figures/plot_impvars_model_ensamble.png)
+
+El modelo ensamblado presenta un patrón similar de importancia de
+variables a la conjunción de todos los modelos. Esto tiene sentido
+porque es una agrupación de una parte de ellos, y en ese sentido refleja
+las fortalezas comunes entre los modelos integrados. No obstante, los
+valores de importancia y permutación varían levemente para las
+variables, pero no de manera significativa.
 
 ###### Tendencia de atributos - Analisis de dependencia parcial
 
+Para entender con mayor detalle el comportamiento y la tendencia de las
+variables en la predicción de los modelos, se realizaron análisis de
+dependencia parcial. Estos análisis muestran cuánto cambia la predicción
+del modelo cuando varían los atributos de cada variable, manteniendo
+constantes las demás variables. Reflejan la relación entre los atributos
+de la variable y la probabilidad de presencia de la especie. Además,
+estos análisis permiten ver el comportamiento de las variables para la
+predicción de ocurrencia considerando la interacción entre variables.
+Sin embargo, analizar la dependencia parcial entre conjuntos de muchas
+variables puede ser costoso computacionalmente y complejo de
+interpretar. Por esta razón, se realizaron análisis de dependencia
+parcial individuales y por pares de las variables contempladas. La
+dependencia parcial del modelo ensamblado se estimó como la media de las
+dependencias parciales de los modelos que lo integran, calculando las
+dependencias parciales para cada uno de los modelos y luego
+promediándolas para obtener asi las tendencias de dependencia parcial
+del modelo ensamblado.
+
+``` r
+## Dependencia Parcial de variables por modelo 
+
+# Ordenar las variables por importancia de permutación
+vars_pdp_model<- summ_importance_data_model  %>% arrange(-permutation.importance)
+
+
+# Lista de combinaciones de variables por pares
+data_combinations_model<- as.character(vars_pdp_model$variable) %>%  {combinations(n = length(.), r = 2, v = ., repeats.allowed = TRUE)} %>% as.data.frame() %>% 
+  setNames(c("Var1", "Var2")  ) %>% dplyr::mutate(comb= paste0("comb", seq(nrow(.))))
+list_combinations_model<- data_combinations_model %>% split(.$comb)
+
+
+# Calcular la dependencia parcial para cada combinación de variables
+list_prev_model<- list() # cache para evaluar dobles estimaciones.
+list_pdp_vars_model <- pblapply( list_combinations_model, function(y) {
+  
+  vars_model<- sort(unique(as.character(unlist(y[,c("Var1", "Var2")]))))
+  index_var<- paste0(vars_model, collapse = "_")
+  
+ # Calcular la dependencia parcial
+    if(index_var %in% names(list_prev_model) ){  # Usar modelo previo si ya fue calculado
+      pdp_model<- list_prev_model[[index_var]]    
+    } else {  
+      
+      # generar grid de estimaciones (combinacion de atributos a evaluar/ quantiles por defecto)
+      data_grid<- lapply(vars_model, function(x) { 
+        type_var<- class(data_train_model[,x])
+        if(type_var=="numeric"){
+          quantile(data_train_model[,x], probs = seq(0, 1, length.out = 20)) } else { unique(data_train_model[,x]) }
+      }) %>%  {do.call(expand.grid, .)} %>% setNames(vars_model) %>% dplyr::distinct()
+      
+      # estimacion de dependencia con el modelo de evaluacion
+      pdp_model <- pdp::partial(eval_model, pred.var = vars_model, pred.fun = function(object, newdata) {predict(object, newdata)} , train = data_train_model, ice = F, pred.grid = data_grid,
+                                prob = T,  progress = "text", plot= F, chull = F, approx = T)
+      # guardar resultado
+      list_prev_model[[index_var]]<<- pdp_model
+    }
+
+# Calcular la media de las predicciones agrupadas por cada variable
+  factor_columns <- names(pdp_model)[sapply(pdp_model, is.factor)]
+    if(length(factor_columns)>0){
+      pdp_model_factor<- pdp_model
+      for( j in factor_columns){
+        pdp_model_factor<- pdp_model_factor[pdp_model_factor[,j] =="1", ]
+      }
+    } else {pdp_model_factor<- pdp_model}
+    
+    pdp_list<- lapply(vars_model, function(y) {
+      
+      type_var<- class(pdp_model[,y])
+      
+      if(type_var=="factor"){
+        
+        other_factors<- factor_columns %>% {.[!. %in% y]}
+        if(length(other_factors)>0){
+          pdp_model_0 <- pdp_model
+          for( o in other_factors){
+            pdp_model_0<- pdp_model_0[pdp_model_0[,o] =="1", ]
+          }
+        } else {pdp_model_0<- pdp_model}
+        
+        pdp_var<- pdp_model_0 %>% dplyr::group_by(!!sym(y)) %>% dplyr::summarise(yhat= mean(yhat, na.rm=T))
+        pdp_var<- pdp_var[pdp_var[,y]==1,]
+        
+      } else {
+        pdp_var<- pdp_model_factor %>% dplyr::group_by(!!sym(y)) %>% dplyr::summarise(yhat= mean(yhat, na.rm=T))
+      }
+      
+      as.data.frame(pdp_var)
+      
+    }) %>% setNames(vars_model)
+    
+    pdp_list
+  
+})
+
+
+#### Resumir metricas de combinaciones pdp ####
+list_pdp_vars_unlist_summ <- c(list(compiled_pdp=data_combinations_model), list_pdp_vars_model)
+
+### Análisis de Dependencia Parcial - Atributos de Variables - Modelo Ensamblado #####
+
+# Leer los datos de dependencia parcial de cada modelo para el ensamble
+data_combinations_ensamble<- pblapply(folders_better_models_path, function(x) {
+  path_pdp<- file.path(x$folder, paste0("impVar_pdp_attributes_",x$name_layer, ".xlsx"))
+  model_pdp<- path_pdp %>% read.xlsx() %>% 
+    dplyr::filter(Var1 %in% summ_importance_data_ensamble$variable | Var2 %in% summ_importance_data_ensamble$variable) %>% dplyr::distinct() %>% 
+    dplyr::mutate(path_pdp= path_pdp) 
+}) %>% plyr::rbind.fill() %>% dplyr::mutate(id_comb = paste0(Var1, "_", Var2)  ) %>% dplyr::mutate(id_comb = factor(id_comb, levels= unique(.$id_comb))  ) %>% 
+  dplyr::mutate(id_comb= paste0("comb", as.numeric(id_comb)))
+
+
+# Dividir los datos de dependencia parcial por variable
+pdp_better_models_list<- data_combinations_ensamble %>% split(.$Var1)
+
+# Calcular la dependencia parcial para el modelo ensamblado (media de las dependencias de los modelos integrados)
+list_pdp_vars_ensamble<- pblapply( pdp_better_models_list , function(y) { 
+  
+  list_Var2<- split(y, y$Var2)
+  
+  list_pdp_Var2<- pblapply(list_Var2, function(z) {
+    
+    name_vars<- dplyr::select(z, c("Var1", "Var2")) %>% dplyr::distinct() %>% unlist() %>% unique()
+    
+    data_pdp_list<- z %>% split(.$path_pdp) %>% {.[1:2]} %>%   lapply(function(z) {read.xlsx(z$path_pdp, z$comb, colNames = F, rowNames = F) }) %>% plyr::rbind.fill() 
+    
+    pdp_var2 <- lapply(seq(1, ncol(data_pdp_list), by = 2), function(i) { data_pdp_list[, i:min(i + 1, ncol(data_pdp_list))]
+    }) %>% setNames(name_vars) %>%
+      {lapply(names(.), function(h)  .[[h]] %>% setNames(c(h, "yhat")) %>% dplyr::group_by(!!sym(h)) %>% dplyr::summarise(yhat= mean(yhat, na.rm=T)) )} %>% setNames(name_vars)
+    
+  })
+  list_pdp_Var2
+})
+
+
+# Compilar los resultados de la dependencia parcial del modelo ensamblado
+list_pdp_vars_unlist_summ_ensamble<- c(list(compiled_pdp=data_combinations_ensamble %>%   dplyr::select(c("Var1", "Var2", "id_comb")) %>% dplyr::distinct() ), 
+                                       unlist(list_pdp_vars_ensamble, recursive = F) %>% setNames( unique(data_combinations_ensamble$id_comb) ) )
+
+
+#### Plot dependencia parcial - modelo ensamblado ####
+# Ordenar las variables por importancia de permutación
+vars_pdp_ensamble<- summ_importance_data_ensamble  %>% arrange(-permutation.importance)
+
+# Gáficos de dependencia parcial para cada variable
+list_plots_pdpvar_ensamble<- pblapply(vars_pdp_ensamble$variable, function(x){
+
+  data_pdp_var_ensamble<- dplyr::filter(data_combinations_ensamble, Var1 %in% x | Var2 %in% x) %>%   dplyr::select(c("Var1", "Var2", "id_comb")) %>% dplyr::distinct() %>% 
+    dplyr::mutate(Var_comb = if_else(Var1 == x, Var2, Var1)) %>% mutate(Var_comb = factor(Var_comb, levels = rev(levels(vars_pdp_ensamble$variable)))) %>%
+    arrange(Var_comb) %>%  dplyr::mutate(id_comb= factor(id_comb, levels= unique(.$id_comb))) %>% split(.$id_comb)
+  
+  # Gráficos para cada combinación de variables
+  plots_pdp_var_ensamble<- pblapply(seq_along(data_pdp_var_ensamble), function(y) { print(y); y<- data_pdp_var_ensamble[[y]]
+  
+  data_comb<- list_pdp_vars_ensamble[[as.character(y$Var1)]][[y$Var2]][[as.character(x)]] %>% as.data.frame() %>% setNames(c("var", "prob"))
+  
+  label_x<- if(y$Var1 == x){y$Var2}else{y$Var1}
+  
+  type_var<- class(data_comb[, "var"])
+  
+  plot_pdp_var<- {if(type_var == "factor"){  # Condicional segun tipo de variable
+    
+    ggplot(data_comb, aes(x = var, y = prob)) +
+      geom_bar(stat = "identity", fill = "#77ACD1", alpha= 0.8) +
+      geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = 0.75, ymax = 1), fill = "yellow", alpha = 0.1)+
+      theme_light()+xlab(label_x)+ylab(x)+ theme(text = element_text(size = 4))
+
+  } else {
+    ggplot()+
+      geom_line(data = data_comb, aes(x = var, y = prob), color= "#77ACD1")+
+      geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = 0.75, ymax = 1), fill = "yellow", alpha = 0.1)+
+      theme_light()+xlab(label_x)+ylab(x)+ theme(text = element_text(size = 4))
+  }}
+  plot_pdp_var
+  
+  })
+  
+  # Compilar los gráficos en un solo objeto
+  compiled_plot_var<- ggpubr::ggarrange(plotlist = plots_pdp_var_ensamble)
+})
+
+# Guardar los gráficos de dependencia parcial en un archivo PDF
+pdf(  file.path(folder_ensamble, paste0(  "impVar_pdp_attributes_plot_", name_ensamble, ".pdf"))  )
+for(plot in list_plots_pdpvar_ensamble) { print(plot) }
+dev.off(); dev.off()
+```
+
+Los resultados se almacenaron como pdf
+[impVar_pdp_attributes_plot](README_figures/impVar_pdp_attributes_plot.pdf)
+en para facilitar su analisis.
+<embed src="README_figures/impVar_pdp_attributes_plot.pdf"
+style="width:100.0%" height="500" />
+
+Cada figura de dependencia parcial fue revisada cuidadosamente para
+identificar las interacciones de variables que mejor representan la
+distribución de la especie. Este proceso involucró la evaluación visual
+de las gráficas de dependencia parcial para discernir patrones
+significativos en cómo las variables influyen en la probabilidad de
+ocurrencia de la especie.
+
+``` r
+# Plot de los mejores resultados
+col1<- list(list_plots_pdpvar_ensamble[[1]][[1]]+xlab(""), list_plots_pdpvar_ensamble[[2]][[1]]+xlab(""), list_plots_pdpvar_ensamble[[3]][[1]]+xlab(""), 
+            list_plots_pdpvar_ensamble[[8]][[1]]+xlab(""),
+            list_plots_pdpvar_ensamble[[5]][[1]])
+
+col2<- list(list_plots_pdpvar_ensamble[[1]][[2]]+xlab("")+ggtitle(""), list_plots_pdpvar_ensamble[[2]][[2]]+xlab("")+ggtitle(""), list_plots_pdpvar_ensamble[[3]][[2]]+xlab("")+ggtitle(""), 
+            list_plots_pdpvar_ensamble[[8]][[2]]+xlab("")+ggtitle(""),
+            list_plots_pdpvar_ensamble[[5]][[2]]+ggtitle(""))
+
+col3<- list(list_plots_pdpvar_ensamble[[1]][[3]]+xlab("")+ggtitle(""), list_plots_pdpvar_ensamble[[2]][[3]]+xlab("")+ggtitle(""), list_plots_pdpvar_ensamble[[3]][[3]]+xlab("")+ggtitle(""), 
+            list_plots_pdpvar_ensamble[[8]][[3]]+xlab("")+ggtitle(""),
+            list_plots_pdpvar_ensamble[[5]][[3]]+ggtitle(""))
+
+col4<- list(list_plots_pdpvar_ensamble[[1]][[4]]+xlab("")+ggtitle(""), list_plots_pdpvar_ensamble[[2]][[4]]+xlab("")+ggtitle(""), list_plots_pdpvar_ensamble[[3]][[4]]+xlab("")+ggtitle(""), 
+            list_plots_pdpvar_ensamble[[8]][[4]]+xlab("")+ggtitle(""),
+            list_plots_pdpvar_ensamble[[5]][[4]]+ggtitle(""))
+
+# Arreglo de gráficos de los mejores resultados
+better_pdp<- ggarrange(plotlist = 
+list(ggarrange(plotlist = col1, ncol = 1),
+ggarrange(plotlist = col2, ncol = 1),
+ggarrange(plotlist = col3, ncol = 1),
+ggarrange(plotlist = col4, ncol = 1)),
+ncol = 4
+)
+
+better_pdp_yaxis <- annotate_figure(better_pdp,  left = text_grob("Probabilidad predicha", rot = 90,  size = 6)) # Añadir una etiqueta de eje Y al gráfico combinado
+
+
+print(better_pdp_yaxis)
+```
+
+![](README_figures/plot_pdp_ensamble.png)
+
+La figura de análisis de dependencia parcial revela patrones claros en
+la predicción del modelo ensamblado. En particular, se observa que la
+probabilidad de presencia de la especie es mayor en zonas con bajas
+precipitaciones y pendientes moderadas dentro del Orobioma Andino
+Altoandino de la Cordillera Oriental. Estos ambientes semiáridos son
+favorecidos por la especie, mientras que fuera de este bioma, este
+patrón no se mantiene, subrayando la importancia de estas condiciones
+ambientales específicas. Además, la figura muestra un aumento en la
+probabilidad de ocurrencia en áreas con alta cobertura de arbustales
+dentro del mismo bioma. Esta relación sugiere que los arbustales
+proporcionan condiciones favorables para la especie, complementando la
+estructura del hábitat ofrecida por el bioma. La interacción entre estas
+variables – pendiente, precipitación anual y proporción de arbustales –
+es relevante para explicar la distribución de la especie, proporcionando
+una predicción precisa y coherente con el conocimiento ecológico
+existente.
+
 #### Analisis de aprovechamiento
+
+Se generaron figuras de influencia-dependencia que representan la
+relación entre el aprovechamiento y la representatividad de la especie
+por sitio. Estos diagramas permiten visualizar zonas de alto
+aprovechamiento, zonas de baja representatividad y evaluar el potencial
+para un uso sostenible o insostenible de los recursos.
+
+En este análisis, los sitios considerados fueron veredas, que tenían
+datos de aprovechamiento calculados previamente. La representatividad de
+la especie en cada vereda se evaluó comparando el área ocupada por la
+especie dentro de la vereda (según el modelo ensamblado) con el área
+total de la vereda.
+
+``` r
+# Cargar datos de aprovechamiento por sitios de interes (veredas)
+info_aprovechamiento <- read.xlsx(file.path(dir_work, "info_aprovechamiento.xlsx"))
+
+### Analisis de aprovechamiento - ensamblado ####
+list_veredas_ensamble<- info_aprovechamiento %>% split(.$Value)
+
+rep_veredas_ensamble<- pblapply(list_veredas_ensamble, function(x) {
+  
+  rast_vereda <- terra::rast(x$path_rast) %>% terra::resample(map_ensamble_treshold)
+  rast_vereda_ensamble <- map_ensamble_treshold %>% terra::mask(rast_vereda)
+  
+  area_vereda_ensamble <- terra::cellSize(rast_vereda_ensamble, mask=T, unit="km") %>% values() %>% na.omit() %>% sum()
+  
+  rep_ver_ensamble<- x %>% dplyr::mutate(area_vereda_ensamble=area_vereda_ensamble) %>% dplyr::mutate(rep_ensamble_vereda= (area_vereda_ensamble/area_vereda))
+  rep_ver_ensamble
+}) %>% plyr::rbind.fill() %>% dplyr::select(- c("X3", "Value", "vereda", "path_rast"))
+
+plot_aprovechamiento_ensamble  <- ggplot(rep_veredas_ensamble, aes(x = rep_ensamble_vereda, y = Indice_aprov)) +
+  geom_point(aes(label= Veredas , color= Departamento         ), shape= 17)+
+  geom_text_repel(aes(label= Veredas , color= Departamento         ), size= 3, show_guide  = FALSE) +
+  labs(x= "% Rep ensamblado.", y= "Uso")   +
+  geom_hline(yintercept = 0.5, linetype = "dashed", color = "red") +  # Línea horizontal en y = 0.5
+  geom_vline(xintercept = 0.5, linetype = "dashed", color = "red") +
+  annotate("text", x = Inf, y = Inf, label = "I", hjust = 1.1, vjust = 1.1) +
+  annotate("text", x = -Inf, y = Inf, label = "II", hjust = -0.1, vjust = 1.1) +
+  annotate("text", x = -Inf, y = -Inf, label = "III", hjust = -0.1, vjust = - 1)+
+  annotate("text", x = Inf, y = -Inf, label = "IV", hjust = 1.1, vjust = -1) +
+  coord_cartesian(xlim= c(0,1), ylim= c(0,1))+
+  scale_y_continuous(expand = c(0,0))
+
+print(plot_aprovechamiento_ensamble)
+```
+
+![](README_figures/plot_aprovechamiento.png)
+
+Los resultados ilustran cómo se distribuyen el aprovechamiento y la
+representatividad de la especie en las veredas de Boyacá y Cundinamarca,
+proporcionando una visión clara de las diferentes dinámicas de
+representatividad y uso de la especie en la región. Las veredas del
+cuadrante I, donde el uso y la representatividad son altos, son críticas
+para el aprovechamiento y la conservación de la especie, ya que aunque
+hay una alta presencia de la especie, también hay fuertes dinámicas de
+aprovechamiento que requieren medidas de protección que perduren tanto
+la especie como ese aprovechamiento. En el cuadrante II, con alta
+representatividad pero bajo aprovechamiento, se identifican zonas con
+alto potencial para ser explotadas de manera sostenible, ofreciendo una
+oportunidad para un uso equilibrado de los recursos. En el cuadrante IV,
+con alto aprovechamiento pero baja representatividad, se representa un
+riesgo de sobreexplotación, donde la baja presencia de la especie
+combinada con un uso intensivo requiere atención para asegurar su
+sostenibilidad. Este análisis es relevante para identificar áreas
+prioritarias y guiar la implementación de estrategias de conservación
+que promuevan la protección y el aprovechamiento sostenible de la
+especie.
 
 #### Exportar resultados finales
