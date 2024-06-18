@@ -18,6 +18,7 @@ output:
 Flujo de trabajo – Modelo de distribución de Vaccinium meridionale en el
 altiplano cundiboyacense, Colombia
 ================
+
 Este documento detalla el flujo de trabajo desarrollado en R software
 para la estimación del modelo de distribución del agras (Vaccinium
 meridionale) en la jurisdicción de la Corporación Autónoma Regional de
@@ -41,7 +42,6 @@ distribución estimado y las dinámicas de uso y aprovechamiento de la
 especie por parte de comunidades locales.
 
 ## Tabla de contenido
-
 - [1. Organizar entorno de trabajo](#1-organizar-entorno-de-trabajo)
 - [2. Fundamentación del procesoy carga de
   datos](#2-fundamentación-del-procesoy-carga-de-datos)
@@ -80,6 +80,7 @@ especie por parte de comunidades locales.
           parcial](#tendencia-de-atributos---analisis-de-dependencia-parcial)
     - [Analisis de aprovechamiento](#analisis-de-aprovechamiento)
     - [Exportar resultados finales](#exportar-resultados-finales)
+
 
 ## 1. Organizar entorno de trabajo
 
@@ -1688,7 +1689,46 @@ better_models_ensamble<- better_models_index$better_models_test
 # Generacion modelo ensamblado - MEDIA LINEAL DE LOS QUE LO INTEGRAN
 map_ensamble <- list_models_compiled[[ better_models_ensamble ]] %>% mean() %>% setNames("map_ensamble") 
 map_ensamble_treshold<- map_ensamble;map_ensamble_treshold[map_ensamble_treshold<model_threshold]<- NA # Areas de alta predicción del modelo (AHPM) acorde al umbral
+
+### Cortar resultados - area de estudio ####
+carcun_rast<- terra::rast(dir_work, "studyArea.tif") %>% terra::resample(map_ensamble)
+map_ensamble_carcun<- terra::mask(map_ensamble, carcun_rast) %>% terra::trim()
+map_ensamble_treshold_carcun<-  terra::mask(map_ensamble_treshold, carcun_rast ) %>% terra::trim()
+
+# Plot del modelo ensamblado
+plot_map_ensamble<- ggplot()+
+  annotation_map_tile(type = "cartolight", zoom = 7) +
+  geom_spatraster(data = map_ensamble, alpha= 0.8)+
+  scale_fill_distiller("Prob", palette = "Spectral", na.value = NA)+ ggtitle("map_ensamble")+
+  theme(text = element_text(size = 4))
+
+plot_map_ensamble_carcun<- ggplot()+
+  annotation_map_tile(type = "cartolight", zoom = 7) +
+  geom_spatraster(data = map_ensamble_carcun, alpha= 0.8)+
+  scale_fill_distiller("Prob", palette = "Spectral", na.value = NA)+ ggtitle("map_ensamble_carcun")+
+  theme(text = element_text(size = 4))
+
+plot_map_ensamble_treshold<- ggplot() +
+  annotation_map_tile( zoom = 10) +
+  geom_spatraster(data = map_ensamble_treshold, aes(fill = map_ensamble)) +
+  scale_fill_gradient(low = "red", high = "red", na.value = NA, name = "Prob")+
+  coord_sf()+ ggtitle("plot_map_ensamble_treshold")+
+  theme(text = element_text(size = 4))
+
+plot_map_ensamble_treshold_carcun<- ggplot() +
+  annotation_map_tile( zoom = 10) +
+  geom_spatraster(data = map_ensamble_treshold_carcun, aes(fill = map_ensamble),  alpha=0.5) +
+  scale_fill_gradient(low = "red", high = "red", na.value = NA, name = "Prob")+
+  coord_sf()+ ggtitle("map_ensamble_treshold_carcun")+
+  theme(text = element_text(size = 4))
+
+plots_ensamble<- ggpubr::ggarrange(plotlist = list(plot_map_ensamble, plot_map_ensamble_treshold, plot_map_ensamble_carcun, plot_map_ensamble_treshold_carcun), 
+                                   common.legend = T, legend = "bottom", ncol=2, nrow=2)
+
+print(plots_ensamble)
 ```
+
+![](README_figures/figure_plots_ensamble.jpeg)
 
 Se esperaba seleccionar como mejor modelo ensamblado aquel con el mejor
 (menor) score recalculado, considerando esta combinación de modelos como
@@ -2093,3 +2133,36 @@ que promuevan la protección y el aprovechamiento sostenible de la
 especie.
 
 #### Exportar resultados finales
+
+``` r
+# metricas ensamblado
+openxlsx::write.xlsx(eval_result_ensamble, file.path(folder_ensamble, paste0("results_ensamble_",name_ensamble, ".xlsx")))
+openxlsx::write.xlsx(eval_importance_ensamble, file.path(folder_ensamble, paste0("importance_data_",name_ensamble, ".xlsx")))
+
+# plots importancia de variables
+ggsave(file.path(folder_ensamble, paste0(  "impVar", name_ensamble, ".png")), plot_impvars_ensamble)
+ggsave(file.path(folder_ensamble, paste0(  "impVar", name_ensamble, ".jpg")), plot_impvars_ensamble)
+
+# data correlaciones ensamblado final
+openxlsx::write.xlsx(cordata_ensamble, file.path(folder_ensamble, paste0("impVar_cordata_",name_ensamble, ".xlsx")))
+
+# plot correlaciones ensamblado final
+ggsave(file.path(folder_ensamble, paste0(  "dendroCorVarsModel", name_ensamble, ".png")), ggdendroPlot_Cor_map_ensamble)
+ggsave(file.path(folder_ensamble, paste0(  "dendroCorVarsModel", name_ensamble, ".jpg")), ggdendroPlot_Cor_map_ensamble)
+
+# plot analisis de aprovechamiento
+openxlsx::write.xlsx(rep_veredas_ensamble, file.path(folder_ensamble, paste0("rep_veredas_ensamble_",name_ensamble, ".xlsx")))
+ggsave(file.path(folder_ensamble, paste0( "plot_uso_rep", name_ensamble, ".png")), plot_aprovechamiento_ensamble)
+ggsave(file.path(folder_ensamble, paste0("plot_uso_rep", name_ensamble, ".jpg")), plot_aprovechamiento_ensamble)
+
+# raster resultados
+terra::writeRaster(map_ensamble, file.path(folder_ensamble, paste0(  "full_", name_ensamble, ".tif")),overwrite = T )
+terra::writeRaster(map_ensamble_treshold, file.path(folder_ensamble, paste0(  "thresh_", gsub("\\.", "", model_threshold), "_" , name_ensamble, ".tif") ),overwrite = T )
+
+terra::writeRaster(map_ensamble_carcun, file.path(folder_ensamble, paste0(  "carcun_full_", name_ensamble, ".tif")),overwrite = T )
+terra::writeRaster(map_ensamble_treshold_carcun, file.path(folder_ensamble, paste0(  "carcun_thresh_", name_ensamble, ".tif")),overwrite = T )
+
+
+# metricas de dependencia parcial
+openxlsx::write.xlsx(list_pdp_vars_unlist_summ_ensamble, file.path(folder_ensamble, paste0("impVar_pdp_attributes_",name_ensamble, ".xlsx")))
+```
